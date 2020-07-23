@@ -26,6 +26,11 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>OrbitOLED</name>
+			<type>2</type>
+			<location>C:/file/UsersL$/ltr28/Home/My Documents/2020/ENCE464/OrbitOLED</location>
+		</link>
+		<link>
 			<name>drivers/buttons.c</name>
 			<type>1</type>
 			<locationURI>SW_ROOT/examples/boards/ek-tm4c123gxl/drivers/buttons.c</locationURI>
