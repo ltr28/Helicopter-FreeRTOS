@@ -16,14 +16,31 @@
 #include "circBufT.h"
 #include "system.h"
 #include "driverlib/adc.h"
+#include "utils/uartstdio.h"
+#include "priorities.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
 
+#include "OrbitOLED/OrbitOLEDInterface.h"
+#include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
 
 
 static uint32_t refAltitude;       //Reference Altitude
 static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
 
 
-
+//*****************************************************************************
+//
+// The queue that holds messages sent to the LED task.
+//
+//*****************************************************************************
+xQueueHandle g_pAltQueue;
+extern xSemaphoreHandle g_pUARTSemaphore;
+#define ALTTASKSTACKSIZE        128         // Stack size in words
+#define ALT_ITEM_SIZE           sizeof(uint8_t)
+#define ALT_QUEUE_SIZE          5
 
 //  *****************************************************************************
 //  ADCIntHandler: The handler for the ADC conversion complete interrupt.
@@ -125,4 +142,21 @@ int32_t percentAltitude(void)
 circBuf_t* bufferLocation(void)
 {
     return &g_inBuffer;
+}
+
+static void AltTask(void *pvParameters)
+{
+    OLEDStringDraw("Task Running!", 0, 0);
+}
+
+
+uint32_t initAltTask(void) {
+    //Set initial state conditions
+    g_pAltQueue = xQueueCreate(ALT_QUEUE_SIZE, ALT_ITEM_SIZE);
+    if(xTaskCreate(AltTask, (const portCHAR *)"ALT", ALTTASKSTACKSIZE, NULL, tskIDLE_PRIORITY + PRIORITY_ALT_TASK, NULL) != pdTRUE)
+    {
+        return(1);
+    }
+
+    return (0);
 }
