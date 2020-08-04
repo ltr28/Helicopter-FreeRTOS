@@ -88,7 +88,7 @@ mode_type mode = Landed;  //Initial mode is landed
 // initSwitch_PC4:      Initialises and sets up switch on PC4
 void initSwitch_PC4(void)
 {
-    // Initialise SW1
+    // Initialise SW1 on orbit booster pack
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
     GPIOPinTypeGPIOInput (GPIO_PORTA_BASE, GPIO_PIN_7);
     GPIOPadConfigSet (GPIO_PORTA_BASE, GPIO_PIN_7, GPIO_STRENGTH_2MA,

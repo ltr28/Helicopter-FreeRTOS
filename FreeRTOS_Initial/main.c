@@ -19,6 +19,7 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -77,70 +78,80 @@ void initAll (void) {
     initADC();
     initYaw();
     initDisplay();
-  //initSysTick();
-     initButtons();
+    initButtons();
     initSwitch_PC4();
-    //initDisplay();
     initialiseUSB_UART();
     initCircBuf(bufferLocation(), BUF_SIZE);
     initmotor();
+
     SysCtlDelay(SysCtlClockGet() / 12);
     resetAltitude();
 }
-
-//*****************************************************************************
-// Control:            Controls the altitude and yaw of a model helicopter
-void control (void)
-{
-    helicopterStates();
-    OutputToUART();
-    GetSwitchState();
-    PIDControlAlt();
-    PIDControlYaw();
-}
-
-void altTask (void *pvparameters )
-{
-    volatile uint32_t ul;
-    //cost char *pcTaskName = "Running the Height Task\r\n";
-    for( ;; )
-    {
-        //OLEDStringDraw("Display Altitude", 0, 0);
-        //writeCircBuf()
-        vTaskDelay(10);
-    }
-}
-
-//
-
-void dispTask (void *pvparameters, int yaw)
-{
-    //if the length of the queue for writing to the display is greater than 0 write to the screen
-    printString("Yaw = %4d%%", readCircBuf(bufferLocation()), 0);
-    freeCircBuf(bufferLocation());
-
-}
-
-
 
 //*****************************************************************************
 // Main:            Controls the altitude and yaw of a model helicopter
 int main(void)
 {
     initAll();
-    xTaskCreate( yawTask, "Yaw Task", 1000, NULL, 2, NULL); {
-        while(1){
-            //add blinking LED routine in here
+
+
+    if(yawTaskInit() != 0){
+        while(1)
+        {
+            //add blinking LED routine here
+            //print to UART Yaw Task not working
         }
     }
 
-    xTaskCreate( dispTask, "Display Task", 1000, NULL, 1, NULL);
-    {
-        while(1) {
-            //add blinking LED routine in here
+    if (altitudeTaskInit() != 0){
+        while(1)
+        {
+            //add blinking LED routine here
+            //print to UART Altitude Task not working
         }
     }
+
+    if(controlTaskInit() != 0){
+        while(1)
+        {
+            //add blinking LED routine here
+            //print to UART Control Task not working
+        }
+
+    }
+
+    if(buttonsTaskInit() != 0){
+        while(1)
+        {
+            //add blinking LED routine here
+            //print to UART Button Task not working
+        }
+
+    }
+
+    if(PWMTaskInit() != 0){
+          while(1)
+          {
+              //add blinking LED routine here
+              //print to UART PWM Task not working
+          }
+
+      }
+
+    if(DisplayTaskInit() != 0){
+          while(1)
+          {
+              //add blinking LED routine here
+              //print to UART PWM Task not working
+          }
+
+      }
+
+
+
+
     vTaskStartScheduler();
+
     while(1)
     {
     }

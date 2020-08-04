@@ -17,11 +17,14 @@
 #include "system.h"
 #include "driverlib/adc.h"
 #include "utils/uartstdio.h"
+
+//freertos header files
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
+
 
 #include "OrbitOLED/OrbitOLEDInterface.h"
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
@@ -38,6 +41,7 @@ static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample 
 //*****************************************************************************
 xQueueHandle g_pAltQueue;
 extern xSemaphoreHandle g_pUARTSemaphore;
+
 #define ALTTASKSTACKSIZE        128         // Stack size in words
 #define ALT_ITEM_SIZE           sizeof(uint8_t)
 #define ALT_QUEUE_SIZE          5
