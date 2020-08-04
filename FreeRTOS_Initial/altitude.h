@@ -56,4 +56,8 @@ percentAltitude(void);
 circBuf_t*
 bufferLocation(void);
 
+uint32_t
+initAltTask(void);
+
+
 #endif /*ALTITUDE_H_*/

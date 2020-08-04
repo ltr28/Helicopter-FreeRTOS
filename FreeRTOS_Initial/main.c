@@ -39,6 +39,8 @@
 #include "control.h"
 #include "uart.h"
 
+#define mainDELAY_LOOP_COUNT 4000
+
 //*****************************************************************************
 //
 // The mutex that protects concurrent access of UART from multiple tasks.
@@ -68,19 +70,20 @@ vApplicationStackOverflowHook(xTaskHandle *pxTask, char *pcTaskName)
 //*****************************************************************************
 //  initAll: Initialises all buttons, interrupts, ADC, PWM, modes and controls
 void initAll (void) {
+    initClock();
+
     resetmotor();
     initButtonCheck();
-    initClock();
     initADC();
     initYaw();
-    initSysTick();
-    initButtons();
-    initSwitch_PC4();
     initDisplay();
+  //initSysTick();
+     initButtons();
+    initSwitch_PC4();
+    //initDisplay();
     initialiseUSB_UART();
     initCircBuf(bufferLocation(), BUF_SIZE);
     initmotor();
-    IntMasterEnable(); // Enable interrupts to the processor.
     SysCtlDelay(SysCtlClockGet() / 12);
     resetAltitude();
 }
@@ -96,18 +99,50 @@ void control (void)
     PIDControlYaw();
 }
 
+void altTask (void *pvparameters )
+{
+    volatile uint32_t ul;
+    //cost char *pcTaskName = "Running the Height Task\r\n";
+    for( ;; )
+    {
+        OLEDStringDraw("Display Altitude", 0, 0);
+        for(ul = 0; ul < mainDELAY_LOOP_COUNT; ul++)
+        {
+
+        }
+    }
+}
+
+void yawTask (void *pvparameters)
+{
+    int ul = 0;
+    for( ;; )
+    {
+        OLEDStringDraw("Display Yaw", 0, 0);
+        for(ul = 0; ul < mainDELAY_LOOP_COUNT; ul++)
+        {
+
+        }
+    }
+}
+
 //*****************************************************************************
 // Main:            Controls the altitude and yaw of a model helicopter
 int main(void)
 {
     initAll();
-    vTaskStartScheduler();
 
-    while (1)
-	{
-        //start running through the states of the helicopter
-        control();
-
-	}
+    xTaskCreate( yawTask, "Yaw Task", 1000, NULL, 1, NULL);
+    xTaskCreate( altTask, "Altitude Task", 1000, NULL, 1, NULL);
+ vTaskStartScheduler();
+    while(1)
+    {
+    }
+//    while (1)
+//	{
+//        //start running through the states of the helicopter
+//        control();
+//
+//	}
 }
 

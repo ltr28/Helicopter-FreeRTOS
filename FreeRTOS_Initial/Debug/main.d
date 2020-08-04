@@ -17,20 +17,20 @@ main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/pin_map.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/rom.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/sysctl.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/uart.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/FreeRTOS.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/FreeRTOS.h
 main.obj: C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stddef.h
 main.obj: C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/_ti_config.h
 main.obj: C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/linkage.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOSConfig.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/projdefs.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/portable.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/deprecated_definitions.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/portable/CCS/ARM_CM4F/portmacro.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/mpu_wrappers.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/task.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/list.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/queue.h
-main.obj: P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/semphr.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOSConfig.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/projdefs.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/portable.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/deprecated_definitions.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/portable/CCS/ARM_CM4F/portmacro.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/mpu_wrappers.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/task.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/list.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/queue.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/semphr.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/utils/uartstdio.h
 main.obj: C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdarg.h
 main.obj: ../system.h
@@ -72,20 +72,20 @@ C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/pin_map.h:
 C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/rom.h: 
 C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/sysctl.h: 
 C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/uart.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/FreeRTOS.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/FreeRTOS.h: 
 C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stddef.h: 
 C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/_ti_config.h: 
 C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/linkage.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOSConfig.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/projdefs.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/portable.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/deprecated_definitions.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/portable/CCS/ARM_CM4F/portmacro.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/mpu_wrappers.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/task.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/list.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/queue.h: 
-P:/My//\ Documents/2020/ENCE464/CCS_workspace/group28/FreeRTOS_Initial/FreeRTOS/include/semphr.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOSConfig.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/projdefs.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/portable.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/deprecated_definitions.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/portable/CCS/ARM_CM4F/portmacro.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/mpu_wrappers.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/task.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/list.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/queue.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/semphr.h: 
 C:/ti/TivaWare_C_Series-2.1.4.178/utils/uartstdio.h: 
 C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdarg.h: 
 ../system.h: 

@@ -55,7 +55,7 @@ void SysTickIntHandler(void) {
         tickCount = 0;
         slowTick = true;
     }
-        updateReset();
+        //updateReset();
 }
 
 //*****************************************************************************
@@ -85,19 +85,19 @@ void
 initClock (void)
 {
     // Set the clock rate to 20 MHz
-    SysCtlClockSet (SYSCTL_SYSDIV_10 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
+    SysCtlClockSet (SYSCTL_SYSDIV_2_5 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
                     SYSCTL_XTAL_16MHZ);
     //
     // Set up the period for the SysTick timer.  The SysTick timer period is
     // set as a function of the system clock.
-    SysTickPeriodSet(SysCtlClockGet() / SAMPLE_RATE_HZ);
+   // SysTickPeriodSet(SysCtlClockGet() / SAMPLE_RATE_HZ);
     //
     // Register the interrupt handler
-    SysTickIntRegister(SysTickIntHandler);
+   // SysTickIntRegister(SysTickIntHandler);
     //
     // Enable interrupt and device
-    SysTickIntEnable();
-    SysTickEnable();
+    //SysTickIntEnable();
+    //SysTickEnable();
 }
 
 

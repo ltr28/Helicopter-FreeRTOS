@@ -68,7 +68,7 @@ void initADC (void)
     //
     // The ADC0 peripheral must be enabled for configuration and use.
     SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
-
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_ADC0));
     // Enable sample sequence 3 with a processor signal trigger.  Sequence 3
     // will do a single sample when the processor sends a signal to start the
     // conversion.
@@ -151,8 +151,10 @@ static void AltTask(void *pvParameters)
 
 
 uint32_t initAltTask(void) {
+
     //Set initial state conditions
     g_pAltQueue = xQueueCreate(ALT_QUEUE_SIZE, ALT_ITEM_SIZE);
+
     if(xTaskCreate(AltTask, (const portCHAR *)"ALT", ALTTASKSTACKSIZE, NULL, tskIDLE_PRIORITY + PRIORITY_ALT_TASK, NULL) != pdTRUE)
     {
         return(1);
