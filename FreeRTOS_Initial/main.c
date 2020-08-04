@@ -105,44 +105,44 @@ void altTask (void *pvparameters )
     //cost char *pcTaskName = "Running the Height Task\r\n";
     for( ;; )
     {
-        OLEDStringDraw("Display Altitude", 0, 0);
-        for(ul = 0; ul < mainDELAY_LOOP_COUNT; ul++)
-        {
-
-        }
+        //OLEDStringDraw("Display Altitude", 0, 0);
+        //writeCircBuf()
+        vTaskDelay(10);
     }
 }
 
-void yawTask (void *pvparameters)
+//
+
+void dispTask (void *pvparameters, int yaw)
 {
-    int ul = 0;
-    for( ;; )
-    {
-        OLEDStringDraw("Display Yaw", 0, 0);
-        for(ul = 0; ul < mainDELAY_LOOP_COUNT; ul++)
-        {
+    //if the length of the queue for writing to the display is greater than 0 write to the screen
+    printString("Yaw = %4d%%", readCircBuf(bufferLocation()), 0);
+    freeCircBuf(bufferLocation());
 
-        }
-    }
 }
+
+
 
 //*****************************************************************************
 // Main:            Controls the altitude and yaw of a model helicopter
 int main(void)
 {
     initAll();
+    xTaskCreate( yawTask, "Yaw Task", 1000, NULL, 2, NULL); {
+        while(1){
+            //add blinking LED routine in here
+        }
+    }
 
-    xTaskCreate( yawTask, "Yaw Task", 1000, NULL, 1, NULL);
-    xTaskCreate( altTask, "Altitude Task", 1000, NULL, 1, NULL);
- vTaskStartScheduler();
+    xTaskCreate( dispTask, "Display Task", 1000, NULL, 1, NULL);
+    {
+        while(1) {
+            //add blinking LED routine in here
+        }
+    }
+    vTaskStartScheduler();
     while(1)
     {
     }
-//    while (1)
-//	{
-//        //start running through the states of the helicopter
-//        control();
-//
-//	}
 }
 

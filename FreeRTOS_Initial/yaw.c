@@ -144,4 +144,15 @@ void initYaw (void) {
     IntEnable(INT_GPIOB); //Enable interrupts on B.
 }
 
+void yawTask (void *pvparameters)
+{
+
+    for( ;; ) {
+        //adding the getYaw to a queue
+
+        getYaw()
+        vTaskDelay(10);
+    }
+}
+
 
