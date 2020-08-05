@@ -9,6 +9,7 @@
 
 //*****************************************************************************
 //FreeRTOS Includes
+#include <heliQueue.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include "inc/hw_memmap.h"
@@ -22,7 +23,6 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "queue.h"
 #include "semphr.h"
 
 #include "utils/uartstdio.h"
