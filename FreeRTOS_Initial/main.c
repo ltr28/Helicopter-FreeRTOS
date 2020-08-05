@@ -83,7 +83,6 @@ void initAll (void) {
     initialiseUSB_UART();
     initCircBuf(bufferLocation(), BUF_SIZE);
     initmotor();
-
     SysCtlDelay(SysCtlClockGet() / 12);
     resetAltitude();
 }
@@ -95,15 +94,15 @@ int main(void)
     initAll();
 
 
-    if(yawTaskInit() != 0){
-        while(1)
-        {
-            //add blinking LED routine here
-            //print to UART Yaw Task not working
-        }
-    }
+//    if(initYawTask() != 0){
+//        while(1)
+//        {
+//            //add blinking LED routine here
+//            //print to UART Yaw Task not working
+//        }
+//    }
 
-    if (altitudeTaskInit() != 0){
+    if (initAltTask() != 0){
         while(1)
         {
             //add blinking LED routine here
@@ -111,41 +110,41 @@ int main(void)
         }
     }
 
-    if(controlTaskInit() != 0){
-        while(1)
-        {
-            //add blinking LED routine here
-            //print to UART Control Task not working
-        }
-
-    }
-
-    if(buttonsTaskInit() != 0){
-        while(1)
-        {
-            //add blinking LED routine here
-            //print to UART Button Task not working
-        }
-
-    }
-
-    if(PWMTaskInit() != 0){
-          while(1)
-          {
-              //add blinking LED routine here
-              //print to UART PWM Task not working
-          }
-
-      }
-
-    if(DisplayTaskInit() != 0){
-          while(1)
-          {
-              //add blinking LED routine here
-              //print to UART PWM Task not working
-          }
-
-      }
+//    if(initControlTask != 0){
+//        while(1)
+//        {
+//            //add blinking LED routine here
+//            //print to UART Control Task not working
+//        }
+//
+//    }
+//
+//    if(initButtonsTask() != 0){
+//        while(1)
+//        {
+//            //add blinking LED routine here
+//            //print to UART Button Task not working
+//        }
+//
+//    }
+//
+//    if(initPWMTask() != 0){
+//          while(1)
+//          {
+//              //add blinking LED routine here
+//              //print to UART PWM Task not working
+//          }
+//
+//      }
+//
+//    if(initDisplayTask() != 0){
+//          while(1)
+//          {
+//              //add blinking LED routine here
+//              //print to UART PWM Task not working
+//          }
+//
+//      }
 
 
 

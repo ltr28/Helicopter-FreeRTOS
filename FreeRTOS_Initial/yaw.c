@@ -150,9 +150,10 @@ void yawTask (void *pvparameters)
     for( ;; ) {
         //adding the getYaw to a queue
 
-        getYaw()
-        vTaskDelay(10);
+        getYaw();
+        //vTaskDelay(10);
     }
 }
 
+//void initYawTask (void )
 
