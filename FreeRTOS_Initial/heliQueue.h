@@ -1,5 +1,5 @@
 /*
- * queue.h
+
  *
  *  Created on: 5/08/2020
  *      Author: nja100
@@ -15,7 +15,7 @@ vReceiverTask(void *pvParameters);
 void
 vSenderTask(void *pvParameters );
 
-uint32_t
-initQueueTasks(void);
+void
+initQueue(void);
 
 #endif /* HELIQUEUE_H_ */

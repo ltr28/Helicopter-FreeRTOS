@@ -15,6 +15,7 @@ ORDERED_OBJS += \
 "./circBufT.obj" \
 "./control.obj" \
 "./display.obj" \
+"./heliQueue.obj" \
 "./main.obj" \
 "./motor.obj" \
 "./system.obj" \
@@ -193,8 +194,8 @@ FreeRTOS_Initial.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "altitude.obj" "buttons4.obj" "circBufT.obj" "control.obj" "display.obj" "main.obj" "motor.obj" "system.obj" "tm4c123gh6pm_startup_ccs.obj" "uart.obj" "ustdlib.obj" "yaw.obj" "FreeRTOS\croutine.obj" "FreeRTOS\event_groups.obj" "FreeRTOS\list.obj" "FreeRTOS\queue.obj" "FreeRTOS\stream_buffer.obj" "FreeRTOS\tasks.obj" "FreeRTOS\timers.obj" "FreeRTOS\portable\CCS\ARM_CM4F\port.obj" "FreeRTOS\portable\CCS\ARM_CM4F\portasm.obj" "FreeRTOS\portable\MemMang\heap_2.obj" "OrbitOLED\OrbitOLEDInterface.obj" "OrbitOLED\lib_OrbitOled\ChrFont0.obj" "OrbitOLED\lib_OrbitOled\FillPat.obj" "OrbitOLED\lib_OrbitOled\OrbitOled.obj" "OrbitOLED\lib_OrbitOled\OrbitOledChar.obj" "OrbitOLED\lib_OrbitOled\OrbitOledGrph.obj" "OrbitOLED\lib_OrbitOled\delay.obj" 
-	-$(RM) "altitude.d" "buttons4.d" "circBufT.d" "control.d" "display.d" "main.d" "motor.d" "system.d" "tm4c123gh6pm_startup_ccs.d" "uart.d" "ustdlib.d" "yaw.d" "FreeRTOS\croutine.d" "FreeRTOS\event_groups.d" "FreeRTOS\list.d" "FreeRTOS\queue.d" "FreeRTOS\stream_buffer.d" "FreeRTOS\tasks.d" "FreeRTOS\timers.d" "FreeRTOS\portable\CCS\ARM_CM4F\port.d" "FreeRTOS\portable\MemMang\heap_2.d" "OrbitOLED\OrbitOLEDInterface.d" "OrbitOLED\lib_OrbitOled\ChrFont0.d" "OrbitOLED\lib_OrbitOled\FillPat.d" "OrbitOLED\lib_OrbitOled\OrbitOled.d" "OrbitOLED\lib_OrbitOled\OrbitOledChar.d" "OrbitOLED\lib_OrbitOled\OrbitOledGrph.d" "OrbitOLED\lib_OrbitOled\delay.d" 
+	-$(RM) "altitude.obj" "buttons4.obj" "circBufT.obj" "control.obj" "display.obj" "heliQueue.obj" "main.obj" "motor.obj" "system.obj" "tm4c123gh6pm_startup_ccs.obj" "uart.obj" "ustdlib.obj" "yaw.obj" "FreeRTOS\croutine.obj" "FreeRTOS\event_groups.obj" "FreeRTOS\list.obj" "FreeRTOS\queue.obj" "FreeRTOS\stream_buffer.obj" "FreeRTOS\tasks.obj" "FreeRTOS\timers.obj" "FreeRTOS\portable\CCS\ARM_CM4F\port.obj" "FreeRTOS\portable\CCS\ARM_CM4F\portasm.obj" "FreeRTOS\portable\MemMang\heap_2.obj" "OrbitOLED\OrbitOLEDInterface.obj" "OrbitOLED\lib_OrbitOled\ChrFont0.obj" "OrbitOLED\lib_OrbitOled\FillPat.obj" "OrbitOLED\lib_OrbitOled\OrbitOled.obj" "OrbitOLED\lib_OrbitOled\OrbitOledChar.obj" "OrbitOLED\lib_OrbitOled\OrbitOledGrph.obj" "OrbitOLED\lib_OrbitOled\delay.obj" 
+	-$(RM) "altitude.d" "buttons4.d" "circBufT.d" "control.d" "display.d" "heliQueue.d" "main.d" "motor.d" "system.d" "tm4c123gh6pm_startup_ccs.d" "uart.d" "ustdlib.d" "yaw.d" "FreeRTOS\croutine.d" "FreeRTOS\event_groups.d" "FreeRTOS\list.d" "FreeRTOS\queue.d" "FreeRTOS\stream_buffer.d" "FreeRTOS\tasks.d" "FreeRTOS\timers.d" "FreeRTOS\portable\CCS\ARM_CM4F\port.d" "FreeRTOS\portable\MemMang\heap_2.d" "OrbitOLED\OrbitOLEDInterface.d" "OrbitOLED\lib_OrbitOled\ChrFont0.d" "OrbitOLED\lib_OrbitOled\FillPat.d" "OrbitOLED\lib_OrbitOled\OrbitOled.d" "OrbitOLED\lib_OrbitOled\OrbitOledChar.d" "OrbitOLED\lib_OrbitOled\OrbitOledGrph.d" "OrbitOLED\lib_OrbitOled\delay.d" 
 	-$(RM) "FreeRTOS\portable\CCS\ARM_CM4F\portasm.d" 
 	-@echo 'Finished clean'
 	-@echo ' '

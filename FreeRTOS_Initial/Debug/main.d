@@ -1,6 +1,7 @@
 # FIXED
 
 main.obj: ../main.c
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/heliQueue.h
 main.obj: C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdbool.h
 main.obj: C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdint.h
 main.obj: C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/_stdint40.h
@@ -29,8 +30,8 @@ main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/portable/
 main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/mpu_wrappers.h
 main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/task.h
 main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/list.h
-main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/queue.h
 main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/semphr.h
+main.obj: P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/queue.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/utils/uartstdio.h
 main.obj: C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdarg.h
 main.obj: ../system.h
@@ -56,6 +57,7 @@ main.obj: C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdio.h
 main.obj: C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdlib.h
 
 ../main.c: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/heliQueue.h: 
 C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdbool.h: 
 C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdint.h: 
 C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/_stdint40.h: 
@@ -84,8 +86,8 @@ P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/portable/CCS/ARM_CM
 P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/mpu_wrappers.h: 
 P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/task.h: 
 P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/list.h: 
-P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/queue.h: 
 P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/semphr.h: 
+P:/My//\ Documents/ENCE464/group28/FreeRTOS_Initial/FreeRTOS/include/queue.h: 
 C:/ti/TivaWare_C_Series-2.1.4.178/utils/uartstdio.h: 
 C:/ti/ccs920/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdarg.h: 
 ../system.h: 

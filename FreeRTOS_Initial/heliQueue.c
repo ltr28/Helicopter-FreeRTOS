@@ -4,15 +4,25 @@
  *  Created on: 5/08/2020
  *      Author: nja100
  */
-#include "heliQueue.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "utils/uartstdio.h"
+
 //freertos header files
-#include "queue.h"
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "queue.h"
+
+#define HELI_QUEUE_SIZE 5
+#define MAX_QUEUE_SIZE sizeof(int32_t)
 
 QueueHandle_t xQueue;
+
+extern xSemaphoreHandle g_pUARTSemaphore;
 
 static void vSenderTask( void *pvParameters )
 {
@@ -35,7 +45,10 @@ static void vSenderTask( void *pvParameters )
         if( xStatus != pdPASS ) {
             /* The send operation could not complete because the queue was full -this must be an error as the queue should
              * never contain more than one item! */
-            vPrintString( "Could not send to the queue.\r\n" );
+            xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+            UARTprintf("Could not send to the queue.\r\n");
+            xSemaphoreGive(g_pUARTSemaphore);
+            //vPrintString( "Could not send to the queue.\r\n" );
         }
     }
 }
@@ -46,13 +59,18 @@ static void vReceiverTask( void *pvParameters )
     /* Declare the variable that will hold the values received from the queue. */
     int32_t lReceivedValue;
     BaseType_t xStatus;
-    const TickType_txTicksToWait = pdMS_TO_TICKS( 100);
+    const TickType_t xTicksToWait = pdMS_TO_TICKS( 100);
     /* This task is also defined within an infinite loop. */
     for( ;; ) {
         /* This call should always find the queue empty because this task will
          * immediately remove any data that is written to the queue. */
         if( uxQueueMessagesWaiting( xQueue ) != 0 ) {
-            vPrintString( "Queue should have been empty!\r\n" );
+
+            xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+            UARTprintf("Queue should have been empty!\r\n");
+            xSemaphoreGive(g_pUARTSemaphore);
+
+            //vPrintString( "Queue should have been empty!\r\n" );
         }
         /* Receive data from the queue.The first parameter is the queue from which data is to be received.  The
          * queue is created before the scheduler is started, and therefore before this
@@ -63,11 +81,17 @@ static void vReceiverTask( void *pvParameters )
         xStatus = xQueueReceive( xQueue, &lReceivedValue, xTicksToWait );
         if( xStatus == pdPASS ) {
             /* Data was successfully received from the queue, print out the received value. */
-            vPrintStringAndNumber( "Received = ", lReceivedValue );
+            xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+            UARTprintf("Received = ", lReceivedValue);
+            xSemaphoreGive(g_pUARTSemaphore);
+            //vPrintStringAndNumber( "Received = ", lReceivedValue );
         } else {
             /* Data was not received from the queue even after waiting for 100ms.This must be an error as the sending tasks are free running
              * and will be continuously writing to the queue.*/
-            vPrintString( "Could not receive from the queue.\r\n" );
+            xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+            UARTprintf("Could not receive from the queue.\r\n");
+            xSemaphoreGive(g_pUARTSemaphore);
+            //vPrintString( "Could not receive from the queue.\r\n" );
         }
     }
 }

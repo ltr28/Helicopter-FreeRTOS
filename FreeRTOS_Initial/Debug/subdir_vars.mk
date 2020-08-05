@@ -14,6 +14,7 @@ C_SRCS += \
 ../circBufT.c \
 ../control.c \
 ../display.c \
+../heliQueue.c \
 ../main.c \
 ../motor.c \
 ../system.c \
@@ -28,6 +29,7 @@ C_DEPS += \
 ./circBufT.d \
 ./control.d \
 ./display.d \
+./heliQueue.d \
 ./main.d \
 ./motor.d \
 ./system.d \
@@ -42,6 +44,7 @@ OBJS += \
 ./circBufT.obj \
 ./control.obj \
 ./display.obj \
+./heliQueue.obj \
 ./main.obj \
 ./motor.obj \
 ./system.obj \
@@ -56,6 +59,7 @@ OBJS__QUOTED += \
 "circBufT.obj" \
 "control.obj" \
 "display.obj" \
+"heliQueue.obj" \
 "main.obj" \
 "motor.obj" \
 "system.obj" \
@@ -70,6 +74,7 @@ C_DEPS__QUOTED += \
 "circBufT.d" \
 "control.d" \
 "display.d" \
+"heliQueue.d" \
 "main.d" \
 "motor.d" \
 "system.d" \
@@ -84,6 +89,7 @@ C_SRCS__QUOTED += \
 "../circBufT.c" \
 "../control.c" \
 "../display.c" \
+"../heliQueue.c" \
 "../main.c" \
 "../motor.c" \
 "../system.c" \
