@@ -13,6 +13,9 @@
 // 
 // *******************************************************
 
+
+// *******************************************************
+// Standard Includes
 #include <stdint.h>
 #include <stdbool.h>
 #include "inc/hw_memmap.h"
@@ -25,15 +28,44 @@
 
 
 // *******************************************************
+// OrbitOLED Includes
+#include "OrbitOLED/OrbitOLEDInterface.h"
+#include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
+
+
+// *******************************************************
+//FreeRTOS Header Files
+#include "priorities.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
+
+
+// *******************************************************
 // Globals to module
 static bool but_state[NUM_BUTS];	// Corresponds to the electrical state
 static uint8_t but_count[NUM_BUTS];
 static bool but_flag[NUM_BUTS];
 static bool but_normal[NUM_BUTS];   // Corresponds to the electrical state
 
+
+// *******************************************************
+// FreeRTOS Task Parameters
+xQueueHandle g_pQueue;
+extern xSemaphoreHandle g_pUARTSemaphore;
+
+#define BUT_TASK_STACK_SIZE     128         // Stack size in words
+#define BUT_ITEM_SIZE           sizeof(uint8_t)
+#define BUT_QUEUE_SIZE          5
+
+
+
 // *******************************************************
 // initButtons:     Initialise the variables associated with the set of buttons
 //                  defined by the constants in the buttons2.h header file.
+// Author:          P.J. Bones UCECE
+// Last modified:   7.2.2018
 void
 initButtons (void)
 {
@@ -88,6 +120,8 @@ initButtons (void)
 //                  A state change occurs only after NUM_BUT_POLLS consecutive polls have
 //                  read the pin in the opposite condition, before the state changes and
 //                  a flag is set.  Set NUM_BUT_POLLS according to the polling rate.
+// Author:          P.J. Bones UCECE
+// Last modified:   7.2.2018
 void
 updateButtons (void)
 {
@@ -121,6 +155,8 @@ updateButtons (void)
 // checkButton:     Function returns the new button logical state if the button
 //                  logical state (PUSHED or RELEASED) has changed since the last call,
 //                  otherwise returns NO_CHANGE.
+// Author:          L. W. Trenberth
+// Last modified:   5.8.2020
 uint8_t
 checkButton (uint8_t butName)
 {
@@ -135,3 +171,53 @@ checkButton (uint8_t butName)
 	return NO_CHANGE;
 }
 
+// *******************************************************
+// ButTask:
+// Author:          L. W. Trenberth
+// Last modified:   5.8.2020
+static void
+ButTask(void *pvParameters)
+{
+    bool but_value[NUM_BUTS];
+    int i;
+
+    // Read the pins; true means HIGH, false means LOW
+    but_value[UP] = (GPIOPinRead (UP_BUT_PORT_BASE, UP_BUT_PIN) == UP_BUT_PIN);
+    but_value[DOWN] = (GPIOPinRead (DOWN_BUT_PORT_BASE, DOWN_BUT_PIN) == DOWN_BUT_PIN);
+    but_value[LEFT] = (GPIOPinRead (LEFT_BUT_PORT_BASE, LEFT_BUT_PIN) == LEFT_BUT_PIN);
+    but_value[RIGHT] = (GPIOPinRead (RIGHT_BUT_PORT_BASE, RIGHT_BUT_PIN) == RIGHT_BUT_PIN);
+
+
+    // Iterate through the buttons, updating button variables as required
+    for (i = 0; i < NUM_BUTS; i++)
+    {
+        if (but_value[i] != but_state[i])
+        {
+            but_count[i]++;
+            if (but_count[i] >= NUM_BUT_POLLS)
+            {
+                but_state[i] = but_value[i];
+                but_flag[i] = true;    // Reset by call to checkButton()
+                but_count[i] = 0;
+            }
+        }
+        else
+            but_count[i] = 0;
+    }
+}
+
+// *******************************************************
+// initButTask:     Function initialises the FreeRTOS Button Task
+// Author:          L. W. Trenberth
+// Last modified:   5.8.2020
+uint32_t
+initButTask(void)
+{
+    //Create the task
+    if(xTaskCreate(ButTask, (const portCHAR *)"BUT", BUT_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY + PRIORITY_BUT_TASK, NULL) != pdTRUE)
+    {
+        return(1);
+    }
+
+    return (0);
+}
