@@ -17,13 +17,13 @@
 #include "system.h"
 #include "driverlib/adc.h"
 #include "utils/uartstdio.h"
-#include <heliQueue.h>
+#include "heliQueue.h"
 
 //freertos header files
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include <heliQueue.h>
+#include "queue.h"
 #include "semphr.h"
 
 
@@ -151,11 +151,10 @@ circBuf_t* bufferLocation(void)
 
 static void AltTask(void *pvParameters)
 {
-    int32_t altitude = percentAltitude()
-
+    int32_t altitude = percentAltitude();
 
     //OLEDStringDraw("Task Running!", 0, 0);
-    vTaskDelay();
+    //vTaskDelay();
 }
 
 

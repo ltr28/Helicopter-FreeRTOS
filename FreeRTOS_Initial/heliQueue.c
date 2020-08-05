@@ -4,8 +4,9 @@
  *  Created on: 5/08/2020
  *      Author: nja100
  */
+#include "heliQueue.h"
 //freertos header files
-#include <heliQueue.h>
+#include "queue.h"
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -15,7 +16,7 @@ QueueHandle_t xQueue;
 
 static void vSenderTask( void *pvParameters )
 {
-    int32_tlValueToSend;
+    int32_t lValueToSend;
     BaseType_t xStatus;
     /* Two instances of this task are created so the value that is sent to the
      * queue is passed in via the task parameter-this way each instance can use
@@ -43,7 +44,8 @@ static void vSenderTask( void *pvParameters )
 static void vReceiverTask( void *pvParameters )
 {
     /* Declare the variable that will hold the values received from the queue. */
-    int32_t lReceivedValue;BaseType_txStatus;
+    int32_t lReceivedValue;
+    BaseType_t xStatus;
     const TickType_txTicksToWait = pdMS_TO_TICKS( 100);
     /* This task is also defined within an infinite loop. */
     for( ;; ) {
@@ -72,5 +74,5 @@ static void vReceiverTask( void *pvParameters )
 
 void initQueue(void)
 {
-    xQueue = xQueueCreate(MAX_QUEUE_SIZE, HELI_QUEUE_SIZE)
+    xQueue = xQueueCreate(MAX_QUEUE_SIZE, HELI_QUEUE_SIZE);
 }

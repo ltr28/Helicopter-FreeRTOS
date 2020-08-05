@@ -10,12 +10,12 @@
 
 
 void
-vReceiverTask(void *pvParameters)
+vReceiverTask(void *pvParameters);
 
 void
-vSenderTask(void *pvParameters )
+vSenderTask(void *pvParameters );
 
 uint32_t
-initQueueTasks(void)
+initQueueTasks(void);
 
 #endif /* HELIQUEUE_H_ */
