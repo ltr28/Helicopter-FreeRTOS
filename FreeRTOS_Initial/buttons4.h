@@ -49,11 +49,13 @@ enum butStates {RELEASED = 0, PUSHED, NO_CHANGE};
 //                      read the pin in the opposite condition, before the state changes and
 //                      a flag is set.  Set NUM_BUT_POLLS according to the polling rate.
 
+
 // *******************************************************
 // initButtons:         Initialise the variables associated with the set of buttons
 //                      defined by the constants above.
 void
 initButtons (void);
+
 
 // *******************************************************
 // updateButtons:       Function designed to be called regularly. It polls all
@@ -62,6 +64,7 @@ initButtons (void);
 //                      a SysTick interrupt.
 void
 updateButtons (void);
+
 
 // *******************************************************
 // checkButton:         Function returns the new button state if the button state
@@ -72,6 +75,11 @@ uint8_t
 checkButton (uint8_t butName);
 
 
+// *******************************************************
+// ButTask:             Function designed to be called regularly. It polls all
+//                      buttons once and updates variables associated with the buttons if
+//                      necessary.  It is efficient enough to be part of an ISR, e.g. from
+//                      a SysTick interrupt.
 static void
 ButTask(void *pvParameters);
 
