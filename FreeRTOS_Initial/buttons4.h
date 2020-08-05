@@ -71,4 +71,13 @@ updateButtons (void);
 uint8_t
 checkButton (uint8_t butName);
 
+
+static void
+ButTask(void *pvParameters);
+
+
+uint32_t
+initButTask(void);
+
+
 #endif /*BUTTONS_H_*/

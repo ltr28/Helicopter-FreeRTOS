@@ -9,7 +9,6 @@
 
 //*****************************************************************************
 //FreeRTOS Includes
-#include <heliQueue.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include "inc/hw_memmap.h"
@@ -39,6 +38,7 @@
 #include "motor.h"
 #include "control.h"
 #include "uart.h"
+#include "buttons4.h"
 
 #define mainDELAY_LOOP_COUNT 4000
 
@@ -119,14 +119,14 @@ int main(void)
 //
 //    }
 //
-//    if(initButtonsTask() != 0){
-//        while(1)
-//        {
-//            //add blinking LED routine here
-//            //print to UART Button Task not working
-//        }
-//
-//    }
+    if(initButTask() != 0){
+        while(1)
+        {
+            //add blinking LED routine here
+            //print to UART Button Task not working
+        }
+
+    }
 //
 //    if(initPWMTask() != 0){
 //          while(1)

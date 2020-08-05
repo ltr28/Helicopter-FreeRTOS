@@ -111,45 +111,6 @@ initButtons (void)
 	}
 }
 
-// *******************************************************
-// updateButtons:   Function designed to be called regularly. It polls all
-//                  buttons once and updates variables associated with the buttons if
-//                  necessary.  It is efficient enough to be part of an ISR, e.g. from
-//                  a SysTick interrupt.
-//                  Debounce algorithm: A state machine is associated with each button.
-//                  A state change occurs only after NUM_BUT_POLLS consecutive polls have
-//                  read the pin in the opposite condition, before the state changes and
-//                  a flag is set.  Set NUM_BUT_POLLS according to the polling rate.
-// Author:          P.J. Bones UCECE
-// Last modified:   7.2.2018
-void
-updateButtons (void)
-{
-	bool but_value[NUM_BUTS];
-	int i;
-	
-	// Read the pins; true means HIGH, false means LOW
-	but_value[UP] = (GPIOPinRead (UP_BUT_PORT_BASE, UP_BUT_PIN) == UP_BUT_PIN);
-	but_value[DOWN] = (GPIOPinRead (DOWN_BUT_PORT_BASE, DOWN_BUT_PIN) == DOWN_BUT_PIN);
-    but_value[LEFT] = (GPIOPinRead (LEFT_BUT_PORT_BASE, LEFT_BUT_PIN) == LEFT_BUT_PIN);
-    but_value[RIGHT] = (GPIOPinRead (RIGHT_BUT_PORT_BASE, RIGHT_BUT_PIN) == RIGHT_BUT_PIN);
-	// Iterate through the buttons, updating button variables as required
-	for (i = 0; i < NUM_BUTS; i++)
-	{
-        if (but_value[i] != but_state[i])
-        {
-        	but_count[i]++;
-        	if (but_count[i] >= NUM_BUT_POLLS)
-        	{
-        		but_state[i] = but_value[i];
-        		but_flag[i] = true;	   // Reset by call to checkButton()
-        		but_count[i] = 0;
-        	}
-        }
-        else
-        	but_count[i] = 0;
-	}
-}
 
 // *******************************************************
 // checkButton:     Function returns the new button logical state if the button
