@@ -19,7 +19,8 @@
 #include "utils/uartstdio.h"
 #include "heliQueue.h"
 
-//freertos header files
+//*****************************************************************************
+// FreeRTOS header files
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
