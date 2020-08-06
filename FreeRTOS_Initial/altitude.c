@@ -10,7 +10,27 @@
 //*****************************************************************************
 
 
+#include <stdbool.h>
+#include <stdint.h>
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "inc/hw_ints.h"
+#include "driverlib/gpio.h"
+#include "driverlib/pin_map.h"
+#include "driverlib/rom.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/uart.h"
+#include "utils/uartstdio.h"
 
+
+<<<<<<< HEAD
+=======
+#include "circBufT.h"
+#include "heliQueue.h"
+#include "driverlib/adc.h"
+#include "uart.h"
+#include "ustdlib.h"
+>>>>>>> 9ffc2ab9b17042723c6637a5783669b5620bcdb1
 
 /*
     adc.c
@@ -32,10 +52,20 @@
  */
 
 
+<<<<<<< HEAD
 #include <AllHeaderFiles.h>
 #include "circBufT.h"
 
 extern xSemaphoreHandle g_pUARTSemaphore;
+=======
+//*****************************************************************************
+//
+// The queue that holds messages sent to the LED task.
+//
+//*****************************************************************************
+
+xSemaphoreHandle g_pUARTSemaphore;
+>>>>>>> 9ffc2ab9b17042723c6637a5783669b5620bcdb1
 
 #define ALTITUDETASKSTACKSIZE        128         // Stack size in words
 #define BUF_SIZE 25
@@ -93,6 +123,8 @@ init_adc (void)
     // sequence 0 has 8 programmable steps.  Since we are only doing a single
     // conversion using sequence 3 we will only configure step 0.  For more
     // on the ADC sequences and steps, refer to the LM3S1968 datasheet.
+
+    //
     ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH9 | ADC_CTL_IE |
                              ADC_CTL_END);
 
@@ -153,10 +185,23 @@ calculate_mean_adc_and_percentage(void)
     // circular buffer
     sum = 0;
 
+<<<<<<< HEAD
     for (i = 0; i < BUF_SIZE; i++)
     {
         sum = sum + readCircBuf (&g_inBuffer);
     }
+=======
+//  *****************************************************************************
+//  percentAltitude: Converts the ADC Altitude into a usable percentage altitude
+//                   using a 0.8V difference as the maximum height
+//  RETURNS:         A Height Percentage as a int32_t from the reference height.
+int32_t percentAltitude(void)
+{
+    int32_t percent = 100*(refAltitude-computeAltitude());
+    return percent/RANGE_ALTITUDE; //returns percentage of 0.8V change
+    //return(50);
+}
+>>>>>>> 9ffc2ab9b17042723c6637a5783669b5620bcdb1
 
     average = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
     percentage = (200*(landed_position - average) + range)/(2*range);
@@ -169,6 +214,7 @@ get_percentage(void)
 
 }
 
+<<<<<<< HEAD
 static void AdcTriggerTask(void *pvParameters)
 {
     TickType_t xLastWakeTime;
@@ -183,6 +229,18 @@ static void AdcTriggerTask(void *pvParameters)
        ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
 
        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10))
+=======
+void AltTask(void *pvParameters)
+{
+   for(;;){
+       int32_t altitude = percentAltitude();
+       char altitude_str[MAX_STR_LEN + 1];
+       usprintf(altitude_str, "Current Altitude is %d ", altitude);
+       xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+       UARTSend(altitude_str);
+       xSemaphoreGive(g_pUARTSemaphore);
+       vTaskDelay(1000);
+>>>>>>> 9ffc2ab9b17042723c6637a5783669b5620bcdb1
    }
 }
 
