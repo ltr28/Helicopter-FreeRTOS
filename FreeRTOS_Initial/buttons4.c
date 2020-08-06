@@ -16,10 +16,12 @@
 
 // *******************************************************
 
-#include <AllHeaderFiles.h>
 #include "buttons4.h"
+#include <AllHeaderFiles.h>
+#include "inc/tm4c123gh6pm.h"
 
 
+#define BUT_TASK_STACK_SIZE     128
 
 
 // *******************************************************

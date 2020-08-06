@@ -9,7 +9,7 @@
 
 #include <AllHeaderFiles.h>
 #include "altitude.h"
-
+#include "uart.h"
 
 //
 // The mutex that protects concurrent access of UART from multiple tasks.
@@ -86,14 +86,14 @@ int main(void)
 
 
 
-    if (initAltTask() != 0)
-    {
-        while(1)
-        {
-            //add blinking LED routine here
-            //print to UART Altitude Task not working
-        }
-    }
+//    if (initAltTask() != 0)
+//    {
+//        while(1)
+//        {
+//            //add blinking LED routine here
+//            //print to UART Altitude Task not working
+//        }
+//    }
 
 
 

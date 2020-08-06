@@ -182,42 +182,42 @@ static void AdcTriggerTask(void *pvParameters)
    {
        ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
 
-       vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10))
+       vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10));
    }
 }
 
 
-static void
-AltitudeTask(void *pvParameters)
-{
+//static void
+//AltitudeTask(void *pvParameters)
+//{
+//
+//    while(1)
+//   {
+//
+//        calculate_mean_adc_and_percentage();
+//
+//        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+//        UARTprintf("Current Altitude =  %d\n ", percentage);
+//        xSemaphoreGive(g_pUARTSemaphore);
+//        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(20));
+//   }
+//
+//
+//}
 
-    while(1)
-   {
+//uint32_t
+//initAltTask(void)
+//{
+//    if(xTaskCreate(AltitudeTask, (const portCHAR *)"ALTITUDE", ALTITUDETASKSTACKSIZE, NULL,
+//                      tskIDLE_PRIORITY + PRIORITY_ALT_TASK, NULL) != pdTRUE)
+//       {
+//           return(1);
+//       }
+//    //
+//    // Success.
+//    //
+//    return(0);
+//
+//}
 
-        calculate_mean_adc_and_percentage();
-
-        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-        UARTprintf("Current Altitude =  %d\n ", percentage);
-        xSemaphoreGive(g_pUARTSemaphore);
-        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(20))
-   }
-
-
-}
-
-uint32_t
-initAltTask(void){
-
-    if(xTaskCreate(AltitudeTask, (const portCHAR *)"ALTITUDE", ALTITUDETASKSTACKSIZE, NULL,
-                      tskIDLE_PRIORITY + PRIORITY_ALT_TASK, NULL) != pdTRUE)
-       {
-           return(1);
-       }
-    //
-    // Success.
-    //
-    return(0);
-
-}
-
-uint32_t AdcTriggerTask(void)
+//uint32_t AdcTriggerTask(void)
