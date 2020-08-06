@@ -10,20 +10,8 @@
 //
 //*****************************************************************************
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/pin_map.h" //Needed for pin configure
-#include "driverlib/debug.h"
-#include "driverlib/gpio.h"
-#include "driverlib/pwm.h"
-#include "driverlib/systick.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/interrupt.h"
+#include "AllHeaderFiles.h"
 
-#include "system.h"
 #include "altitude.h"
 #include "display.h"
 #include "yaw.h"

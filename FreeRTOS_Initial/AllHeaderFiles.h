@@ -1,4 +1,5 @@
-
+#ifndef ALLHEADERFILES_H_
+#define ALLHEADERFILES_H_
 
 
 // By:  Texas Instruments
@@ -36,4 +37,4 @@
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
 
 
-
+#endif /*ALLHEADERFILES_H_*/

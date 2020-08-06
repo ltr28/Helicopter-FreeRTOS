@@ -12,14 +12,13 @@
 //*****************************************************************************
 
 
-#include "system.h"
-#include "OrbitOLED/OrbitOLEDInterface.h"
-#include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
+#include "AllHeaderFiles.h"
 #include "altitude.h"
 
 #define DISPTASKSTACKSIZE        128         // Stack size in words
 #define DISP_ITEM_SIZE           sizeof(uint32_t)
 #define DISP_QUEUE_SIZE          5
+#define MAX_STR_LEN              100
 
 //  *****************************************************************************
 //  initDisplay:        Initialises Display using OrbitLED functions

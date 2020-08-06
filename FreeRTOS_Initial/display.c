@@ -10,24 +10,17 @@
 
 
 #include "display.h"
-#include "system.h"
-#include "OrbitOLED/OrbitOLEDInterface.h"
-#include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
+#include "AllHeaderFiles.h"
 
+#include "buttons4.h"
 #include "altitude.h"
 #include "yaw.h"
 #include "control.h"
 #include "uart.h"
 #include "heliQueue.h"
 
-//freertos header files
-#include "priorities.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
 
-
+volatile uint8_t slowTick = false;
 
 //  *****************************************************************************
 //  initDisplay:        Initialises Display using OrbitLED functions
@@ -74,7 +67,7 @@ void initButtonCheck (void) {
 //  NOTE:               This function is not currently implemented, though is included for testing
 void OutputToDisplay (void)
 {
-    printString("Altitude = %4d%%", percentAltitude(), 0);
+//    printString("Altitude = %4d%%", percentAltitude(), 0);
     printString("Yaw Angle = %4d", getYaw(), 1);
     printString("Alt Ref = %4d", GetAltRef(), 2);
     printString("Yaw Ref = %4d", GetYawRef(), 3);
@@ -92,7 +85,7 @@ void OutputToUART (void)
         slowTick = false;
         usprintf (statusStr, "YawRef=%2d Yaw=%2d | \r\n", GetYawRef(), getYaw()); // Form status message
         UARTSend (statusStr); // Send to the console
-        usprintf (statusStr, "AltRef=%2d Alt=%2d | \r\n", GetAltRef(), percentAltitude());
+//        usprintf (statusStr, "AltRef=%2d Alt=%2d | \r\n", GetAltRef(), percentAltitude());
         UARTSend (statusStr);
         usprintf (statusStr, "MDut=%2d TDuty=%2d | \r\n", getMainDuty(), getTailDuty());
         UARTSend (statusStr);

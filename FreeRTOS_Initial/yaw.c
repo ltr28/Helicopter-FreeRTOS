@@ -13,11 +13,9 @@
 #define FIND_REF_MAIN           30 //duty cycle for finding the reference point
 #define FIND_REF_TAIL           40
 
-#include "system.h"
-#include "driverlib/gpio.h"
+#include "AllHeaderFiles.h"
 #include "control.h"
 #include "motor.h"
-#include "inc/tm4c123gh6pm.h"
 
 
 // Sets quadrature encoding states A, B, C, D
