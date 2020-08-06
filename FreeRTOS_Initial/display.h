@@ -12,6 +12,7 @@
 //*****************************************************************************
 
 
+#include "system.h"
 #include "OrbitOLED/OrbitOLEDInterface.h"
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
 #include "altitude.h"
