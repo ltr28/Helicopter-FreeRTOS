@@ -15,31 +15,11 @@
 
 
 // *******************************************************
-// Standard Includes
-#include <stdint.h>
-#include <stdbool.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/gpio.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/debug.h"
-#include "inc/tm4c123gh6pm.h"  // Board specific defines (for PF0)
+
+#include <AllHeaderFiles.h>
 #include "buttons4.h"
 
 
-// *******************************************************
-// OrbitOLED Includes
-#include "OrbitOLED/OrbitOLEDInterface.h"
-#include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
-
-
-// *******************************************************
-//FreeRTOS Header Files
-#include "priorities.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
 
 
 // *******************************************************
@@ -50,18 +30,7 @@ static bool but_flag[NUM_BUTS];
 static bool but_normal[NUM_BUTS];   // Corresponds to the electrical state
 
 
-// *******************************************************
-// FreeRTOS Task Parameters
-xQueueHandle g_pQueue;
-extern xSemaphoreHandle g_pUARTSemaphore;
 
-#define BUT_TASK_STACK_SIZE     128         // Stack size in words
-#define BUT_ITEM_SIZE           sizeof(uint8_t)
-#define BUT_QUEUE_SIZE          5
-
-
-
-// *******************************************************
 // initButtons:     Initialise the variables associated with the set of buttons
 //                  defined by the constants in the buttons2.h header file.
 // Author:          P.J. Bones UCECE

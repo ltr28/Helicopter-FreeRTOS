@@ -7,7 +7,8 @@
 //          A. Chhabra
 // Last modified:	31.5.2019
 
-#include "allHeaderfiles"
+#include <AllHeaderFiles.h>
+#include "altitude.h"
 
 
 //
@@ -35,26 +36,58 @@ vApplicationStackOverflowHook(xTaskHandle *pxTask, char *pcTaskName)
     }
 }
 
-//*****************************************************************************
+void
+init_clock (void)
+{
+    // Set the clock rate to 20 MHz
+    SysCtlClockSet (SYSCTL_SYSDIV_10 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
+                    SYSCTL_XTAL_16MHZ);
+}
+
+void peripherals_reset(void)
+{
+    SysCtlPeripheralReset (SYSCTL_PERIPH_ADC0);
+    SysCtlPeripheralReset (SYSCTL_PERIPH_UART0);
+    SysCtlPeripheralReset (SYSCTL_PERIPH_GPIOA);
+    SysCtlPeripheralReset (SYSCTL_PERIPH_GPIOB);
+    SysCtlPeripheralReset (SYSCTL_PERIPH_GPIOC);
+    SysCtlPeripheralReset (SYSCTL_PERIPH_GPIOD);
+    SysCtlPeripheralReset (SYSCTL_PERIPH_GPIOE);
+    SysCtlPeripheralReset (SYSCTL_PERIPH_GPIOF);
+
+}
+
+void pheripherals_enable(void)
+{
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+}
 
 
 
-
-
-
-//*****************************************************************************
-// Main:            Controls the altitude and yaw of a model helicopter
 int main(void)
 {
-    initADC();
-    initCircBuf(bufferLocation(), BUF_SIZE);
+
+    peripherals_reset (); // all the peripherals are reset
+    pheripherals_enable (); // all the peripherals are enabled
+    init_clock();
+    init_adc();
+    initialiseUSB_UART ();
+
     SysCtlDelay(SysCtlClockGet() / 12);
-    resetAltitude();
+    calculate_landed_position();
 
 
 
 
-    if (initAltTask() != 0){
+    if (initAltTask() != 0)
+    {
         while(1)
         {
             //add blinking LED routine here

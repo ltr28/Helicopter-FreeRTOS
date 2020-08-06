@@ -8,7 +8,8 @@
 // Last modified:   16.4.2018
 //
 
-#include "uart.h"
+#include <AllHeaderFiles.h>
+#include <uart.h>
 
 //********************************************************
 // initialiseUSB_UART - 8 bits, 1 stop bit, no parity
