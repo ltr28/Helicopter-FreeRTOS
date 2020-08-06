@@ -9,6 +9,7 @@
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "utils/uartstdio.h"
+#include "uart.h"
 
 //freertos header files
 #include "priorities.h"
@@ -24,7 +25,7 @@ QueueHandle_t xQueue;
 
 extern xSemaphoreHandle g_pUARTSemaphore;
 
-static void vSenderTask( void *pvParameters )
+void vSenderTask( void *pvParameters )
 {
     int32_t lValueToSend;
     BaseType_t xStatus;
@@ -46,7 +47,7 @@ static void vSenderTask( void *pvParameters )
             /* The send operation could not complete because the queue was full -this must be an error as the queue should
              * never contain more than one item! */
             xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-            UARTprintf("Could not send to the queue.\r\n");
+            UARTSend("Could not send to the queue.\r\n");
             xSemaphoreGive(g_pUARTSemaphore);
             //vPrintString( "Could not send to the queue.\r\n" );
         }
@@ -54,7 +55,7 @@ static void vSenderTask( void *pvParameters )
 }
 
 
-static void vReceiverTask( void *pvParameters )
+int32_t vReceiverTask( void *pvParameters )
 {
     /* Declare the variable that will hold the values received from the queue. */
     int32_t lReceivedValue;
@@ -67,9 +68,9 @@ static void vReceiverTask( void *pvParameters )
         if( uxQueueMessagesWaiting( xQueue ) != 0 ) {
 
             xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-            UARTprintf("Queue should have been empty!\r\n");
+            UARTSend("Queue should have been empty!\r\n");
             xSemaphoreGive(g_pUARTSemaphore);
-
+            return(-1);
             //vPrintString( "Queue should have been empty!\r\n" );
         }
         /* Receive data from the queue.The first parameter is the queue from which data is to be received.  The
@@ -81,16 +82,18 @@ static void vReceiverTask( void *pvParameters )
         xStatus = xQueueReceive( xQueue, &lReceivedValue, xTicksToWait );
         if( xStatus == pdPASS ) {
             /* Data was successfully received from the queue, print out the received value. */
-            xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-            UARTprintf("Received = ", lReceivedValue);
-            xSemaphoreGive(g_pUARTSemaphore);
+            //xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+            //UARTSend(lReceivedValue);
+            //xSemaphoreGive(g_pUARTSemaphore);
+            return(lReceivedValue);
             //vPrintStringAndNumber( "Received = ", lReceivedValue );
         } else {
             /* Data was not received from the queue even after waiting for 100ms.This must be an error as the sending tasks are free running
              * and will be continuously writing to the queue.*/
             xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-            UARTprintf("Could not receive from the queue.\r\n");
+            UARTSend("Could not receive from the queue.\r\n");
             xSemaphoreGive(g_pUARTSemaphore);
+            return(-1);
             //vPrintString( "Could not receive from the queue.\r\n" );
         }
     }

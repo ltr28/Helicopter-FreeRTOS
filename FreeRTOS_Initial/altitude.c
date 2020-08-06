@@ -19,8 +19,7 @@
 #include "utils/uartstdio.h"
 #include "heliQueue.h"
 
-//*****************************************************************************
-// FreeRTOS header files
+//freertos header files
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -138,7 +137,8 @@ int32_t percentAltitude(void)
 {
     int32_t percent = 0;
     percent = 100*(refAltitude-computeAltitude());
-    return percent/RANGE_ALTITUDE; //returns percentage of 0.8V change
+    //return percent/RANGE_ALTITUDE; //returns percentage of 0.8V change
+    return(50);
 }
 
 
@@ -152,17 +152,16 @@ circBuf_t* bufferLocation(void)
 
 static void AltTask(void *pvParameters)
 {
-    int32_t altitude = percentAltitude();
 
-    //OLEDStringDraw("Task Running!", 0, 0);
-    //vTaskDelay();
+    vSenderTask(percentAltitude());
+    vTaskDelay(100);
 }
 
 
 uint32_t initAltTask(void) {
 
     //Set initial state conditions
-    g_pAltQueue = xQueueCreate(ALT_QUEUE_SIZE, ALT_ITEM_SIZE);
+    //g_pAltQueue = xQueueCreate(ALT_QUEUE_SIZE, ALT_ITEM_SIZE);
     initADC();
 
     if(xTaskCreate(AltTask, (const portCHAR *)"ALT", ALTTASKSTACKSIZE, NULL, tskIDLE_PRIORITY + PRIORITY_ALT_TASK, NULL) != pdTRUE)

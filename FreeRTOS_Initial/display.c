@@ -13,10 +13,20 @@
 #include "system.h"
 #include "OrbitOLED/OrbitOLEDInterface.h"
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
+
 #include "altitude.h"
 #include "yaw.h"
 #include "control.h"
 #include "uart.h"
+#include "heliQueue.h"
+
+//freertos header files
+#include "priorities.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
+
 
 
 //  *****************************************************************************
@@ -89,5 +99,25 @@ void OutputToUART (void)
         usprintf (statusStr, "Mode=%s | \r\n", getMode());
         UARTSend (statusStr);
     }
+}
+
+static void DisplayTask(void *pvparameters)
+{
+    int32_t recValue = vReceiverTask(NULL);
+    if( recValue != -1) {
+        printString("Altitude = %4d%%", recValue, 0);
+    }
+    vTaskDelay(100);
+}
+
+int32_t initDisplayTask(void *pvparameters)
+{
+
+    if(xTaskCreate(DisplayTask, (const portCHAR *)"DISPLAY", DISPTASKSTACKSIZE, NULL, tskIDLE_PRIORITY + PRIORITY_DISP_TASK, NULL) != pdTRUE)
+     {
+         return(1);
+     }
+
+     return (0);
 }
 

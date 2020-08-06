@@ -10,10 +10,10 @@
 
 
 void
-vReceiverTask(void *pvParameters);
+vSenderTask( void *pvParameters );
 
-void
-vSenderTask(void *pvParameters );
+int32_t
+vReceiverTask( void *pvParameters );
 
 void
 initQueue(void);
