@@ -12,12 +12,24 @@
 #define RANGE_ALTITUDE 1000*4095/3300
 #define BUF_SIZE 10
 
+#include <stdbool.h>
+#include <stdint.h>
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "inc/hw_ints.h"
+#include "driverlib/gpio.h"
+#include "driverlib/pin_map.h"
+#include "driverlib/rom.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/uart.h"
+#include "utils/uartstdio.h"
+
 
 #include "circBufT.h"
-#include "system.h"
-#include "driverlib/adc.h"
-#include "utils/uartstdio.h"
 #include "heliQueue.h"
+#include "driverlib/adc.h"
+#include "uart.h"
+#include "ustdlib.h"
 
 //freertos header files
 #include "priorities.h"
@@ -40,8 +52,8 @@ static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample 
 // The queue that holds messages sent to the LED task.
 //
 //*****************************************************************************
-xQueueHandle g_pAltQueue;
-extern xSemaphoreHandle g_pUARTSemaphore;
+
+xSemaphoreHandle g_pUARTSemaphore;
 
 #define ALTTASKSTACKSIZE        128         // Stack size in words
 #define ALT_ITEM_SIZE           sizeof(uint8_t)
@@ -88,6 +100,8 @@ void initADC (void)
     // sequence 0 has 8 programmable steps.  Since we are only doing a single
     // conversion using sequence 3 we will only configure step 0.  For more
     // on the ADC sequences and steps, refer to the LM3S1968 datasheet.
+
+    //
     ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH9 | ADC_CTL_IE |
                              ADC_CTL_END);
 
@@ -135,10 +149,9 @@ void resetAltitude (void)
 //  RETURNS:         A Height Percentage as a int32_t from the reference height.
 int32_t percentAltitude(void)
 {
-    int32_t percent = 0;
-    percent = 100*(refAltitude-computeAltitude());
-    //return percent/RANGE_ALTITUDE; //returns percentage of 0.8V change
-    return(50);
+    int32_t percent = 100*(refAltitude-computeAltitude());
+    return percent/RANGE_ALTITUDE; //returns percentage of 0.8V change
+    //return(50);
 }
 
 
@@ -150,11 +163,17 @@ circBuf_t* bufferLocation(void)
     return &g_inBuffer;
 }
 
-static void AltTask(void *pvParameters)
+void AltTask(void *pvParameters)
 {
-
-    vSenderTask(percentAltitude());
-    vTaskDelay(100);
+   for(;;){
+       int32_t altitude = percentAltitude();
+       char altitude_str[MAX_STR_LEN + 1];
+       usprintf(altitude_str, "Current Altitude is %d ", altitude);
+       xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+       UARTSend(altitude_str);
+       xSemaphoreGive(g_pUARTSemaphore);
+       vTaskDelay(1000);
+   }
 }
 
 
