@@ -24,5 +24,7 @@ calculate_mean_adc_and_percentage(void);
 int8_t
 get_percentage(void);
 
-extern uint32_t initAltTask(void);
 
+
+extern uint32_t initAltTask(void);
+extern uint32_t Altitude_calc(void);

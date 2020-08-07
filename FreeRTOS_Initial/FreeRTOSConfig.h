@@ -72,7 +72,7 @@
 #define configCPU_CLOCK_HZ                  ( ( unsigned long ) 80000000 )
 #define configTICK_RATE_HZ                  ( ( portTickType ) 1000 )
 #define configMINIMAL_STACK_SIZE            ( ( unsigned short ) 200 )
-#define configTOTAL_HEAP_SIZE               ( ( size_t ) ( 8192 ) )
+#define configTOTAL_HEAP_SIZE               ( ( size_t ) ( 10000 ) )
 #define configMAX_TASK_NAME_LEN             ( 12 )
 #define configUSE_TRACE_FACILITY            1
 #define configUSE_16_BIT_TICKS              0
@@ -81,6 +81,7 @@
 #define configUSE_MUTEXES                   1
 #define configUSE_RECURSIVE_MUTEXES         1
 #define configCHECK_FOR_STACK_OVERFLOW      2
+#define configSUPPORT_DYNAMIC_ALLOCATION    1
 
 #define configMAX_PRIORITIES                16
 #define configMAX_CO_ROUTINE_PRIORITIES     ( 2 )

@@ -17,7 +17,6 @@
 #include "driverlib/uart.h"
 #include "driverlib/pwm.h"
 #include "driverlib/adc.h"
-#include "driverlib/systick.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/debug.h"
 

@@ -77,25 +77,34 @@ int main(void)
     peripherals_reset (); // all the peripherals are reset
     pheripherals_enable (); // all the peripherals are enabled
     init_clock();
-    init_adc();
     initialiseUSB_UART ();
-
-    SysCtlDelay(SysCtlClockGet() / 12);
-    calculate_landed_position();
-
+    init_adc();
+    g_pUARTSemaphore = xSemaphoreCreateMutex();
 
 
 
-//    if (initAltTask() != 0)
-//    {
-//        while(1)
-//        {
-//            //add blinking LED routine here
-//            //print to UART Altitude Task not working
-//        }
-//    }
+//    SysCtlDelay(SysCtlClockGet() / 12);
+//    calculate_landed_position();
 
 
+
+
+    if (initAltTask() != 0)
+    {
+        while(1)
+        {
+            //add blinking LED routine here
+            //print to UART Altitude Task not working
+        }
+    }
+
+    if(Altitude_calc() != 0 )
+    {
+       while(1)
+       {
+              printf("Virus\n");
+       }
+    }
 
 
     vTaskStartScheduler();

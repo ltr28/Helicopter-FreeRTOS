@@ -16,7 +16,16 @@
 
 // *******************************************************
 
+#include <stdint.h>
+#include <stdbool.h>
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/gpio.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/debug.h"
+#include "inc/tm4c123gh6pm.h"  // Board specific defines (for PF0)
 #include "buttons4.h"
+
 
 
 
@@ -145,49 +154,49 @@ checkButton (uint8_t butName)
 // ButTask:
 // Author:          L. W. Trenberth
 // Last modified:   5.8.2020
-static void
-ButTask(void *pvParameters)
-{
-    bool but_value[NUM_BUTS];
-    int i;
-
-    // Read the pins; true means HIGH, false means LOW
-    but_value[UP] = (GPIOPinRead (UP_BUT_PORT_BASE, UP_BUT_PIN) == UP_BUT_PIN);
-    but_value[DOWN] = (GPIOPinRead (DOWN_BUT_PORT_BASE, DOWN_BUT_PIN) == DOWN_BUT_PIN);
-    but_value[LEFT] = (GPIOPinRead (LEFT_BUT_PORT_BASE, LEFT_BUT_PIN) == LEFT_BUT_PIN);
-    but_value[RIGHT] = (GPIOPinRead (RIGHT_BUT_PORT_BASE, RIGHT_BUT_PIN) == RIGHT_BUT_PIN);
-
-
-    // Iterate through the buttons, updating button variables as required
-    for (i = 0; i < NUM_BUTS; i++)
-    {
-        if (but_value[i] != but_state[i])
-        {
-            but_count[i]++;
-            if (but_count[i] >= NUM_BUT_POLLS)
-            {
-                but_state[i] = but_value[i];
-                but_flag[i] = true;    // Reset by call to checkButton()
-                but_count[i] = 0;
-            }
-        }
-        else
-            but_count[i] = 0;
-    }
-}
-
-// *******************************************************
-// initButTask:     Function initialises the FreeRTOS Button Task
-// Author:          L. W. Trenberth
-// Last modified:   5.8.2020
-uint32_t
-initButTask(void)
-{
-    //Create the task
-    if(xTaskCreate(ButTask, (const portCHAR *)"BUT", BUT_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY + PRIORITY_BUT_TASK, NULL) != pdTRUE)
-    {
-        return(1);
-    }
-
-    return (0);
-}
+//static void
+//ButTask(void *pvParameters)
+//{
+//    bool but_value[NUM_BUTS];
+//    int i;
+//
+//    // Read the pins; true means HIGH, false means LOW
+//    but_value[UP] = (GPIOPinRead (UP_BUT_PORT_BASE, UP_BUT_PIN) == UP_BUT_PIN);
+//    but_value[DOWN] = (GPIOPinRead (DOWN_BUT_PORT_BASE, DOWN_BUT_PIN) == DOWN_BUT_PIN);
+//    but_value[LEFT] = (GPIOPinRead (LEFT_BUT_PORT_BASE, LEFT_BUT_PIN) == LEFT_BUT_PIN);
+//    but_value[RIGHT] = (GPIOPinRead (RIGHT_BUT_PORT_BASE, RIGHT_BUT_PIN) == RIGHT_BUT_PIN);
+//
+//
+//    // Iterate through the buttons, updating button variables as required
+//    for (i = 0; i < NUM_BUTS; i++)
+//    {
+//        if (but_value[i] != but_state[i])
+//        {
+//            but_count[i]++;
+//            if (but_count[i] >= NUM_BUT_POLLS)
+//            {
+//                but_state[i] = but_value[i];
+//                but_flag[i] = true;    // Reset by call to checkButton()
+//                but_count[i] = 0;
+//            }
+//        }
+//        else
+//            but_count[i] = 0;
+//    }
+//}
+//
+//// *******************************************************
+//// initButTask:     Function initialises the FreeRTOS Button Task
+//// Author:          L. W. Trenberth
+//// Last modified:   5.8.2020
+//uint32_t
+//initButTask(void)
+//{
+//    //Create the task
+//    if(xTaskCreate(ButTask, (const portCHAR *)"BUT", BUT_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY + PRIORITY_BUT_TASK, NULL) != pdTRUE)
+//    {
+//        return(1);
+//    }
+//
+//    return (0);
+//}

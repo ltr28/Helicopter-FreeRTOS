@@ -29,11 +29,14 @@ initialiseUSB_UART (void)
     GPIOPinConfigure (GPIO_PA0_U0RX);
     GPIOPinConfigure (GPIO_PA1_U0TX);
 
-    UARTConfigSetExpClk(UART_USB_BASE, SysCtlClockGet(), BAUD_RATE,
+   UARTConfigSetExpClk(UART_USB_BASE, SysCtlClockGet(), BAUD_RATE,
             UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
             UART_CONFIG_PAR_NONE);
+
+    UARTStdioConfig(0, 9600, 20000000 );
     UARTFIFOEnable(UART_USB_BASE);
     UARTEnable(UART_USB_BASE);
+
 }
 
 

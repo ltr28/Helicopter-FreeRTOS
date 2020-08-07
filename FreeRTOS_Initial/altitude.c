@@ -1,15 +1,3 @@
-//*****************************************************************************
-//
-// Altitude - File containing ADC and altitude calculations
-//
-// Author:  N. James
-//          L. Trenberth
-//          M. Arunchayanon
-// Last modified:   31.5.2019
-//
-//*****************************************************************************
-
-
 
 
 /*
@@ -36,15 +24,21 @@
 #include "circBufT.h"
 
 extern xSemaphoreHandle g_pUARTSemaphore;
+BaseType_t xHigherPriorityTaskWoken;
 
-#define ALTITUDETASKSTACKSIZE        128         // Stack size in words
+#define ALTITUDETASKSTACKSIZE        1024         // Stack size in words
 #define BUF_SIZE 25
+#define ADC_QUEUE_ITEM_SIZE sizeof(uint32_t)
 
 static circBuf_t g_inBuffer; // Buffer of size BUF_SIZE integers (sample values)
-static uint16_t  landed_position = 0;
+static uint16_t  landed_position = 2095;
 static uint16_t  average = 0;
 static int8_t    percentage = 0;
 static const int16_t range = 993; // mean adc value at (0% altitude - 100% altitude) = 993 approximately
+uint32_t adcreceive  = 0;
+
+
+QueueHandle_t xADCQueue;
 
 /*
 
@@ -52,20 +46,28 @@ static const int16_t range = 993; // mean adc value at (0% altitude - 100% altit
   Writes to the circular buffer. Based on Week 4 lab ADCdemo1.c - void ADCIntHandler(void)
 
  */
+
+//
+//// Get the single sample from ADC0.  ADC_BASE is defined in
+//// inc/hw_memmap.h
+
+//
+//// Place it in the circular buffer (advancing write index)
+
 void
 adc_int_handler(void)
 {
-    uint32_t ulValue;
-
-    // Get the single sample from ADC0.  ADC_BASE is defined in
-    // inc/hw_memmap.h
-    ADCSequenceDataGet(ADC0_BASE, 3, &ulValue);
-
-    // Place it in the circular buffer (advancing write index)
-    writeCircBuf (&g_inBuffer, ulValue);
-
     // Clean up, clearing the interrupt
     ADCIntClear(ADC0_BASE, 3);
+
+    xHigherPriorityTaskWoken = pdFALSE;
+
+    uint32_t ulValue;
+    ADCSequenceDataGet(ADC0_BASE, 3, &ulValue);
+    xQueueSendFromISR(xADCQueue, &ulValue,  &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+
+
 }
 
 /*
@@ -73,7 +75,7 @@ adc_int_handler(void)
   Intializes ADC_CHANNEL9(AIN9 - PE4 on tiva board)
   Based on Week 4 lab ADCdemo1.c - void initADC (void)
 
-*/
+ */
 void
 init_adc (void)
 {
@@ -114,11 +116,11 @@ init_adc (void)
   Calculates the mean adc value when the helicopter is landed(0%). Calculated value is then used as a
   reference to calculate the altitude of the helicopter.
 
-*/
+ */
 void
 calculate_landed_position(void)
 {
-    uint32_t sum;
+    uint32_t sum = 0;
     uint16_t i;
     uint16_t repeat_times;
 
@@ -138,7 +140,7 @@ calculate_landed_position(void)
         //Adding all the mean values
         landed_position = landed_position + (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
     }
-   // The sum of three mean values divided by 3 to get the average
+    // The sum of three mean values divided by 3 to get the average
     landed_position = landed_position/repeat_times;
 }
 
@@ -169,22 +171,133 @@ get_percentage(void)
 
 }
 
-//static void AdcTriggerTask(void *pvParameters)
-//{
-//    TickType_t xLastWakeTime;
-//    xLastWakeTime = xTaskGetTickCount();
-//
-//    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-//    UARTprintf("Adc Trigger task starting ");
-//    xSemaphoreGive(g_pUARTSemaphore);
-//
-//    while(1)
-//   {
-//       ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
-//
-//       vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10));
-//   }
-//}
+static void AdcTriggerTask(void *pvParameters)
+{
+    TickType_t xLastWakeTime;
+    xLastWakeTime = xTaskGetTickCount();
+
+    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+    UARTprintf("Adc Trigger task starting\n ");
+    xSemaphoreGive(g_pUARTSemaphore);
+
+    while(1)
+    {
+        ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
+
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10));
+    }
+}
+
+
+
+static void AdcreceiveTask(void *p)
+{
+
+    TickType_t xTime;
+    xTime = xTaskGetTickCount();
+    uint16_t i;
+    uint32_t sum = 0;
+
+
+    while (1)
+    {
+        adcreceive = 0;
+
+
+
+
+        if(xQueueReceive(xADCQueue, &adcreceive, 0) == pdTRUE)
+        {
+            printf("receiving_nicely - ADC = %d\n", adcreceive);
+        }
+
+        // Background task: calculate the (approximate) mean of the values in the
+        // circular buffer
+        sum = 0;
+
+        for (i = 0; i < BUF_SIZE; i++)
+        {
+            sum = sum + adcreceive;
+        }
+
+
+        average = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
+        percentage = (200*(landed_position - average) + range)/(2*range);
+        printf("Altitude = %d \n", percentage);
+        vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
+
+    }
+
+}
+
+
+
+
+uint32_t
+initAltTask(void)
+{
+    xADCQueue = xQueueCreate( BUF_SIZE, ADC_QUEUE_ITEM_SIZE );
+    if(xTaskCreate(AdcTriggerTask, (const portCHAR *)"Get Sample", ALTITUDETASKSTACKSIZE, NULL,
+                   tskIDLE_PRIORITY + PRIORITY_ALT_TASK, NULL) != pdTRUE)
+    {
+        return(1);
+    }
+    //
+    // Success.
+    //
+    return(0);
+
+}
+
+
+
+uint32_t
+Altitude_calc(void)
+{
+
+    if(xTaskCreate(AdcreceiveTask, (const portCHAR *)"Altitude_Calc", 1024, NULL,
+                   2, NULL) != pdTRUE)
+    {
+        return(1);
+    }
+    //
+    // Success.
+    //
+    return(0);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //static void
@@ -205,19 +318,6 @@ get_percentage(void)
 //
 //}
 
-//uint32_t
-//initAltTask(void)
-//{
-//    if(xTaskCreate(AltitudeTask, (const portCHAR *)"ALTITUDE", ALTITUDETASKSTACKSIZE, NULL,
-//                      tskIDLE_PRIORITY + PRIORITY_ALT_TASK, NULL) != pdTRUE)
-//       {
-//           return(1);
-//       }
-//    //
-//    // Success.
-//    //
-//    return(0);
-//
-//}
+
 
 //uint32_t AdcTriggerTask(void)
