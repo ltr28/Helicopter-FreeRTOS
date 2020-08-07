@@ -16,9 +16,9 @@
 #include "altitude.h"
 #include "yaw.h"
 #include "control.h"
-#include "uart.h"
+#include "driverlib/uart.h"
 #include "heliQueue.h"
-
+#include "uart.h"
 
 volatile uint8_t slowTick = false;
 

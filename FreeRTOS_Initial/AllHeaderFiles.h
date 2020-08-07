@@ -20,6 +20,7 @@
 #include "driverlib/systick.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/debug.h"
+#include "driverlib/rom.h"
 
 #include "utils/ustdlib.h"
 #include "utils/uartstdio.h"

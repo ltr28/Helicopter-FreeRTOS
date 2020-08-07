@@ -1,28 +1,60 @@
+#ifndef ALTITUDE_H_
+#define ALTITUDE_H_
+//*****************************************************************************
+//
+// Altitude - File containing ADC and altitude calculations
+//
+// Author:  N. James
+//          L. Trenberth
+//          M. Arunchayanon
+// Last modified:   20.4.2019
+//*****************************************************************************
 
+#define BUF_SIZE 10
 
-
-
-
-
-
-// Functions declarations //
-
-//Initializes ADC at channel 9
+//  *****************************************************************************
+//  ADCIntHandler: The handler for the ADC conversion complete interrupt.
+//                 Writes to the circular buffer.
+//  Taken from:    Week4Lab ADCDemo1.c
 void
-init_adc (void);
+ADCIntHandler(void);
 
-//Calculates the mean adc value of the heli altitude position and sets it to (0%). Runs at the start of the program.
+
+//  *****************************************************************************
+//  initADC:    Configures and enables the ADC
+//  Taken from: Week4Lab ADCDemo1.c
 void
-calculate_landed_position(void);
+init_ADC (void);
 
-//Continuously calculates the mean adc value of the heli and converts it into percentage from 0 to 100%.
-//Uses void calculate_landed_position(void) as a reference.
+
+//  *****************************************************************************
+//  computeAltitude: Calculates the average altitude from the ADC.
+//  Taken from:      Week4Lab ADCDemo1.c main function
+//  RETURNS:         The calculated ADC altitude value as a int32_t
+int32_t
+computeAltitude(void);
+
+
+//  *****************************************************************************
+//  resetAltitude: Resets the refAltitude to be current ADC altitude.
 void
-calculate_mean_adc_and_percentage(void);
+resetAltitude(void);
 
-//return the current altitude of the heli
-int8_t
-get_percentage(void);
 
-extern uint32_t initAltTask(void);
+//  *****************************************************************************
+//  percentAltitude: Converts the ADC Altitude into a usable percentage altitude
+//                   using a 0.8V difference as the maximum height
+//  RETURNS: A Height Percentage as a int32_t from the reference height.
+int32_t
+percentAltitude(void);
 
+
+//  *****************************************************************************
+//  bufferLocation: Returns the location of the circular buffer
+//  RETURNS:        A pointer to a circbuf_t
+
+uint32_t
+initAltTask(void);
+
+
+#endif /*ALTITUDE_H_*/
