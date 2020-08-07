@@ -123,9 +123,9 @@ void GetSwitchState(void)
 // checkStability:      Checks if the helicopter has taken off, sets stable to true
 void checkStability(void)
 {
-    if(percentAltitude() >= 30) {
-        stable = true;
-    }
+//    if(percentAltitude() >= 30) {
+//        stable = true;
+//    }
 }
 
 

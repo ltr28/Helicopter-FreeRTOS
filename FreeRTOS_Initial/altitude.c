@@ -169,22 +169,22 @@ get_percentage(void)
 
 }
 
-static void AdcTriggerTask(void *pvParameters)
-{
-    TickType_t xLastWakeTime;
-    xLastWakeTime = xTaskGetTickCount();
-
-    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-    UARTprintf("Adc Trigger task starting ");
-    xSemaphoreGive(g_pUARTSemaphore);
-
-    while(1)
-   {
-       ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
-
-       vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10));
-   }
-}
+//static void AdcTriggerTask(void *pvParameters)
+//{
+//    TickType_t xLastWakeTime;
+//    xLastWakeTime = xTaskGetTickCount();
+//
+//    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+//    UARTprintf("Adc Trigger task starting ");
+//    xSemaphoreGive(g_pUARTSemaphore);
+//
+//    while(1)
+//   {
+//       ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
+//
+//       vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10));
+//   }
+//}
 
 
 //static void

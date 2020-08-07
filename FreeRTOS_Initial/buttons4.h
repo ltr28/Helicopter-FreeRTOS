@@ -14,8 +14,8 @@
 // 
 // *******************************************************
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "AllHeaderFiles.h"
+#include <inc/tm4c123gh6pm.h>
 
 //*****************************************************************************
 // Constants
