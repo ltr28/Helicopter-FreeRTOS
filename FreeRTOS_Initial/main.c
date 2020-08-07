@@ -95,7 +95,6 @@ void initAll (void) {
     //resetmotor();
     //initButtonCheck();
     initClock();
-
     initialiseUSB_UART();
     init_ADC();
     //initYaw();
@@ -103,6 +102,7 @@ void initAll (void) {
     //initButtons();
     //initSwitch_PC4();
     //initmotor();
+   //
     SysCtlDelay(SysCtlClockGet() / 12);
 }
 

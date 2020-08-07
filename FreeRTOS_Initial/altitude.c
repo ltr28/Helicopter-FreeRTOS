@@ -12,7 +12,7 @@ extern xSemaphoreHandle g_pUARTSemaphore;
 
 #define ALT_ITEM_SIZE sizeof(uint32_t)
 #define ALT_QUEUE_SIZE 25
-#define RANGE_ALTITUDE  // mean adc value at (0% altitude - 100% altitude) = 993 approximately
+#define RANGE_ALTITUDE  1051// mean adc value at (0% altitude - 100% altitude) = 993 approximately
 #define MAX_STR_LEN 300
 #define ALTTASKSTACKSIZE 1028
 
@@ -21,7 +21,10 @@ extern xSemaphoreHandle g_pUARTSemaphore;
 //static int8_t    percentage = 0;
 
 QueueHandle_t g_pAltQueue;
-int32_t refAltitude = 0;
+int32_t initial_position = 0;
+
+//bool initialRun = true;
+
 //
 ///*
 
@@ -56,9 +59,6 @@ void ADCIntHandler(void)
         /* Actual macro used here is port specific. */
         taskYIELD();
     }
-
-
-
 }
 
 
@@ -102,9 +102,9 @@ void AdcTrigger(void)
 //    TickType_t xLastWakeTime;
 //    xLastWakeTime = xTaskGetTickCount();
 
-    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-    UARTSend("Trigger Task Begins\n");
-    xSemaphoreGive(g_pUARTSemaphore);
+//    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+//    UARTSend("Trigger Task Begins\n");
+//    xSemaphoreGive(g_pUARTSemaphore);
     ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
 
 //    while(1)
@@ -142,7 +142,7 @@ int32_t computeAltitude (void)
 //  resetAltitude: Resets the refAltitude to be current ADC altitude.
 void resetAltitude (void)
 {
-    refAltitude = computeAltitude();
+    initial_position = computeAltitude();
 }
 
 //  *****************************************************************************
@@ -152,14 +152,16 @@ void resetAltitude (void)
 
 int32_t percentAltitude(void)
 {
-    int32_t percent = computeAltitude();
-    return percent/ALTITUDE; //returns percentage of 0.8V change
+    int32_t current_position = computeAltitude();
+    return (2*100*(initial_position-current_position)+RANGE_ALTITUDE)/(2*RANGE_ALTITUDE); //returns percentage of 0.8V change
 }
 
 void AltTask(void *pvParameters)
 {
     TickType_t xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
+    AdcTrigger();
+    resetAltitude();
     for (;;) {
         AdcTrigger();
         int32_t altitude = percentAltitude();
@@ -169,7 +171,7 @@ void AltTask(void *pvParameters)
         UARTSend(altitude_str);
         xSemaphoreGive(g_pUARTSemaphore);
 
-        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10));
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));
     }
 }
 
