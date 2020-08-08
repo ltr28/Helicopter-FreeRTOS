@@ -41,13 +41,16 @@
 #define UART_USB_GPIO_PIN_RX    GPIO_PIN_0
 #define UART_USB_GPIO_PIN_TX    GPIO_PIN_1
 #define UART_USB_GPIO_PINS      UART_USB_GPIO_PIN_RX | UART_USB_GPIO_PIN_TX
-
+#define MAX_STR_LEN             100
 //********************************************************
 // Prototypes
 //********************************************************
 void
 initialiseUSB_UART (void);
 
+
+void
+UARTFormat (int32_t value, char ouput[MAX_STR_LEN+1]);
 
 void
 UARTSend (char *pucBuffer);

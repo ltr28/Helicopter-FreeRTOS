@@ -41,8 +41,14 @@ YawIntHandler (void);
 //                 Sets PB0 and PB1 to be inputs, enables interrupts on GPIOB.
 //                 An interrupt occurs on both edges of PB0 and PB1 and when triggered,
 //                 runs the YawIntHandler function
+
 void
 initYaw (void);
 
+void
+yawTask (void *pvparameters);
+
+uint32_t
+initYawTask(void);
 
 #endif /* YAW_H_*/

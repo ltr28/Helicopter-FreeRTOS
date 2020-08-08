@@ -1,6 +1,5 @@
 #include <AllHeaderFiles.h>
 
-#include "circBufT.h"
 #include "heliQueue.h"
 #include "altitude.h"
 #include "uart.h"
@@ -13,7 +12,7 @@ extern xSemaphoreHandle g_pUARTSemaphore;
 #define ALT_ITEM_SIZE sizeof(uint32_t)
 #define ALT_QUEUE_SIZE 25
 #define RANGE_ALTITUDE  1051// mean adc value at (0% altitude - 100% altitude) = 993 approximately
-#define MAX_STR_LEN 300
+//#define MAX_STR_LEN 100
 #define ALTTASKSTACKSIZE 1028
 
 //static uint16_t  landed_position = 0;
@@ -99,20 +98,7 @@ init_ADC (void)
 
 void AdcTrigger(void)
 {
-//    TickType_t xLastWakeTime;
-//    xLastWakeTime = xTaskGetTickCount();
-
-//    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-//    UARTSend("Trigger Task Begins\n");
-//    xSemaphoreGive(g_pUARTSemaphore);
     ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
-
-//    while(1)
-//   {
-//       ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
-//
-//       vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10));
-//   }
 }
 
 /*
@@ -127,7 +113,7 @@ void AdcTrigger(void)
 
 int32_t computeAltitude (void)
 {
-    //initate the sum to be 0 and the altitude buffer to be of size 25
+    //initate the sum to be 0 and the altitude value to be zero
     int AltSum, i = 0;
     int32_t Altitude = 0;
     //For the size of Altitude Queue increment over it and add all values
@@ -153,24 +139,38 @@ void resetAltitude (void)
 int32_t percentAltitude(void)
 {
     int32_t current_position = computeAltitude();
+    //do some funky math that Abhimanyu Chhabara can explain pretty well
     return (2*100*(initial_position-current_position)+RANGE_ALTITUDE)/(2*RANGE_ALTITUDE); //returns percentage of 0.8V change
 }
 
 void AltTask(void *pvParameters)
 {
-    TickType_t xLastWakeTime;
-    xLastWakeTime = xTaskGetTickCount();
+    //get and set the last wake time to be the tick count
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+
+    //Trigger the ADC
     AdcTrigger();
+
+    //reset the altitude to be intial position (create a zero position)
     resetAltitude();
+
+    //runs forever when task is scheduled by FreeRTOS
     for (;;) {
+        //call the ADC trigger such that the altitude percentage is set to altitude
         AdcTrigger();
         int32_t altitude = percentAltitude();
-        char altitude_str[MAX_STR_LEN + 1];
-        usprintf(altitude_str, "Current Altitude is %d \n", altitude);
-        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-        UARTSend(altitude_str);
-        xSemaphoreGive(g_pUARTSemaphore);
 
+        UARTFormat(altitude, "Current Altitude: %d \r\n");
+//        char altitude_str[MAX_STR_LEN + 1];
+//        //Combine the integer with a string so that it can be printed to UART
+//        usprintf(altitude_str, "Current Altitude is %d \r\n", altitude);
+//
+//        //Give and take the semaphore and print it out on UART
+//        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+//        UARTSend(altitude_str);
+//        xSemaphoreGive(g_pUARTSemaphore);
+
+        //delay the task until the correct amount of time has passed
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));
     }
 }

@@ -7,16 +7,26 @@
 //          M. Arunchayanon
 // Last modified:   31.5.2019
 //*****************************************************************************
+#include "AllHeaderFiles.h"
+#include "control.h"
+#include "motor.h"
+#include "uart.h"
+#include "yaw.h"
+
 
 #define NUM_SLOTS               448
 #define TOTAL_ANGLE             360
 #define FIND_REF_MAIN           30 //duty cycle for finding the reference point
 #define FIND_REF_TAIL           40
 
-#include "AllHeaderFiles.h"
-#include "control.h"
-#include "motor.h"
+#define YAW_ITEM_SIZE sizeof(uint32_t)
+#define YAW_QUEUE_SIZE 25
+#define YAWTASKSTACKSIZE 1028
+//#define MAX_STR_LEN 300
 
+
+QueueHandle_t g_pYawQueue;
+extern xSemaphoreHandle g_pUARTSemaphore;
 
 // Sets quadrature encoding states A, B, C, D
 enum quad {A = 0, B = 1, C = 3, D = 2};
@@ -31,6 +41,7 @@ int32_t slot;
 // getYaw:          Uses the current slot number on the disk to
 //                  return an angle in degrees from the original reference point.
 // RETURNS:         Angle value between -180 < Yaw < 180 degrees.
+
 int32_t getYaw(void) {
     int32_t angle = 0;
     int32_t refnum = slot;
@@ -58,6 +69,7 @@ void resetYaw (void) {
 //                  Measures Phasse A and Phase B.
 //                  If moving clockwise, add 1 to slot
 //                  If moving anti-clockwise, minus 1 to slot
+
 void YawIntHandler (void) {
     //Clear the interrupt bits
     GPIOIntClear(GPIO_PORTB_BASE, GPIO_INT_PIN_0 | GPIO_INT_PIN_1);
@@ -144,14 +156,35 @@ void initYaw (void) {
 
 void yawTask (void *pvparameters)
 {
-
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    resetYaw();
     for( ;; ) {
+        GPIOIntRegister(GPIO_PORTB_BASE, YawIntHandler); //If interrupt occurs, run YawIntHandler
         //adding the getYaw to a queue
-
-        getYaw();
-        //vTaskDelay(10);
+        int32_t yaw = getYaw();
+        UARTFormat(yaw, "Current Yaw: %d \r\n");
+        //int32_t yaw = 0;
+//        char theYawStr[MAX_STR_LEN+1];
+//        //Combine the integer with a string so that it can be printed to UART
+//        usprintf(theYawStr, "Current Yaw is %d degrees\r\n", yaw);
+//        //Give and take the semaphore and print it out on UART
+//        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+//        UARTSend(theYawStr);
+//        xSemaphoreGive(g_pUARTSemaphore);
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));
     }
 }
 
-//void initYawTask (void )
+uint32_t initYawTask(void) {
+
+    //Set initial state conditions
+    g_pYawQueue = xQueueCreate(YAW_QUEUE_SIZE, YAW_ITEM_SIZE);
+
+    if(xTaskCreate(yawTask, (const portCHAR *)"YAW", YAWTASKSTACKSIZE, NULL, tskIDLE_PRIORITY + PRIORITY_YAW_TASK, NULL) != pdTRUE)
+    {
+        return(1);
+    }
+
+    return (0);
+}
 

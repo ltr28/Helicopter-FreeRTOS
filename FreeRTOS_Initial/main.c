@@ -97,7 +97,7 @@ void initAll (void) {
     initClock();
     initialiseUSB_UART();
     init_ADC();
-    //initYaw();
+    initYaw();
     //initDisplay();
     //initButtons();
     //initSwitch_PC4();
@@ -111,16 +111,15 @@ void initAll (void) {
 int main(void)
 {
     initAll();
-
-//    if(initYawTask() != 0){
-//        while(1)
-//        {
-//            //add blinking LED routine here
-//            //print to UART Yaw Task not working
-//        }
-//    }
-
     g_pUARTSemaphore = xSemaphoreCreateMutex();
+
+    if(initYawTask() != 0){
+        while(1)
+        {
+            //add blinking LED routine here
+            //print to UART Yaw Task not working
+        }
+    }
 
     if (initAltTask() != 0){
         while(1)

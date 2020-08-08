@@ -7,8 +7,10 @@
 // Author:  P.J. Bones  UCECE
 // Last modified:   16.4.2018
 //
-
+#include "AllHeaderFiles.h"
 #include "uart.h"
+
+extern xSemaphoreHandle g_pUARTSemaphore;
 
 //********************************************************
 // initialiseUSB_UART - 8 bits, 1 stop bit, no parity
@@ -35,6 +37,16 @@ initialiseUSB_UART (void)
     UARTEnable(UART_USB_BASE);
 }
 
+void UARTFormat (int32_t value, char output[MAX_STR_LEN+1])
+{
+    char str [MAX_STR_LEN + 1];
+    //Combine the integer with a string so that it can be printed to UART
+    usprintf(str, output, value);
+    //Give and take the semaphore and print it out on UART
+    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+    UARTSend (str);
+    xSemaphoreGive (g_pUARTSemaphore);
+}
 
 //**********************************************************************
 // Transmit a string via UART0
