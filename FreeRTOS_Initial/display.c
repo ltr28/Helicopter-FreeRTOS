@@ -68,7 +68,7 @@ void initButtonCheck (void) {
 void OutputToDisplay (void)
 {
 //    printString("Altitude = %4d%%", percentAltitude(), 0);
-    printString("Yaw Angle = %4d", getYaw(), 1);
+    //printString("Yaw Angle = %4d", getYaw(), 1);
     printString("Alt Ref = %4d", GetAltRef(), 2);
     printString("Yaw Ref = %4d", GetYawRef(), 3);
 }
@@ -83,7 +83,7 @@ void OutputToUART (void)
     if (slowTick)
     {
         slowTick = false;
-        usprintf (statusStr, "YawRef=%2d Yaw=%2d | \r\n", GetYawRef(), getYaw()); // Form status message
+        //usprintf (statusStr, "YawRef=%2d Yaw=%2d | \r\n", GetYawRef(), getYaw()); // Form status message
         UARTSend (statusStr); // Send to the console
 //        usprintf (statusStr, "AltRef=%2d Alt=%2d | \r\n", GetAltRef(), percentAltitude());
         UARTSend (statusStr);

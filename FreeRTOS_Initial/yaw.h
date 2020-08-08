@@ -18,7 +18,7 @@
 // getYaw:          Uses the current slot number on the disk to
 //                  return an angle in degrees from the original reference point.
 // RETURNS:         Angle value between -180 < Yaw < 180 degrees.
-int32_t
+void
 getYaw(void);
 
 
@@ -43,6 +43,11 @@ YawIntHandler (void);
 //                 runs the YawIntHandler function
 void
 initYaw (void);
+
+void
+yawTask (void);
+
+extern uint32_t inityawTask(void);
 
 
 #endif /* YAW_H_*/

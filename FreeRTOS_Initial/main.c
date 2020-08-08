@@ -10,6 +10,7 @@
 #include <AllHeaderFiles.h>
 #include "altitude.h"
 #include "uart.h"
+#include "yaw.h"
 
 //
 // The mutex that protects concurrent access of UART from multiple tasks.
@@ -33,6 +34,7 @@ vApplicationStackOverflowHook(xTaskHandle *pxTask, char *pcTaskName)
     //
     while(1)
     {
+        UARTprintf("Stack Overflow. Shits going down\n");
     }
 }
 
@@ -73,18 +75,23 @@ void pheripherals_enable(void)
 
 int main(void)
 {
-
+    g_pUARTSemaphore = xSemaphoreCreateMutex();
     peripherals_reset (); // all the peripherals are reset
     pheripherals_enable (); // all the peripherals are enabled
     init_clock();
+
     initialiseUSB_UART ();
     init_adc();
-    g_pUARTSemaphore = xSemaphoreCreateMutex();
+    initYaw();
+    IntMasterEnable();
 
 
 
-//    SysCtlDelay(SysCtlClockGet() / 12);
-//    calculate_landed_position();
+
+
+
+    //    SysCtlDelay(SysCtlClockGet() / 12);
+    //    calculate_landed_position();
 
 
 
@@ -100,10 +107,19 @@ int main(void)
 
     if(Altitude_calc() != 0 )
     {
-       while(1)
-       {
-              printf("Virus\n");
-       }
+        while(1)
+        {
+            printf("Virus\n");
+        }
+    }
+
+    if(inityawTask() != 0){
+        while(1)
+        {
+            //add blinking LED routine here
+            //print to UART Yaw Task not working
+            printf("Virus\n");
+        }
     }
 
 
@@ -151,13 +167,7 @@ int main(void)
 
 
 
-//    if(initYawTask() != 0){
-//        while(1)
-//        {
-//            //add blinking LED routine here
-//            //print to UART Yaw Task not working
-//        }
-//    }
+
 
 
 
