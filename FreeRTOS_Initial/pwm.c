@@ -1,29 +1,6 @@
 
 #include "AllHeaderFiles.h"
-#include "buttons4.h"
-#include "motor.h"
-
-
-/*
-    pwm.c
-
-    Created on: 13/05/2019
-    Team_members: Abhimanyu Chhabra(99799242), Saranya Ramani(27179399), Jin Kim(79903309)
- */
-
-/*
-   pwm.c initializes two PWM signals
-
-   1. PWM output on J4-05 (M0PWM7) with fixed frequency (250Hz)
-   2. PWM output on J3-10 (M1PWM5) with fixed frequency (200Hz)
-
-   Functions based on week3_lab - pwmGen.c are: (Author - P.J. Bones)
-   1.void init_pwm_clock (void)
-   2.void setPWM (uint32_t ui32Freq, uint32_t ui32Duty) - set_main_pwm (uint32_t ui32Duty) &  void set_tail_pwm(uint32_t ui32Duty)
-
- */
-
-#include "pwm.h"
+#include <pwm.h>
 
 
 void

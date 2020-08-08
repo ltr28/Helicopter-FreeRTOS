@@ -7,9 +7,9 @@
 //          M. Arunchayanon
 // Last modified:   31.5.2019
 //*****************************************************************************
+#include <pwm.h>
 #include "AllHeaderFiles.h"
 #include "control.h"
-#include "motor.h"
 
 
 

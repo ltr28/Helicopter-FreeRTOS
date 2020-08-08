@@ -122,14 +122,16 @@ int main(void)
         }
     }
 
-    if(initPWMTask() != 0){
-        while(1)
-        {
-            //add blinking LED routine here
-            //print to UART PWM Task not working
+        if(initButTask() != 0){
+            while(1)
+            {
+                //add blinking LED routine here
+                //print to UART Button Task not working
+            }
+
         }
 
-    }
+
 
     vTaskStartScheduler();
 
@@ -189,14 +191,7 @@ int main(void)
 ////
 ////    }
 ////
-//    if(initButTask() != 0){
-//        while(1)
-//        {
-//            //add blinking LED routine here
-//            //print to UART Button Task not working
-//        }
-//
-//    }
+
 ////
 
 ////
