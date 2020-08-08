@@ -1,186 +1,104 @@
-//*****************************************************************************
-//
-// Motor - Sets up the primary and secondary PWM signals for use
-//           and creates functions for controls.
-//
-// Author:  N. James
-//          L. Trenberth
-//          M. Arunchayanon
-// Last modified:	26.3.2019
-//
-//*****************************************************************************
 
-
-#include <stdint.h>
-#include <stdbool.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/pin_map.h" //Needed for pin configure
-#include "driverlib/debug.h"
-#include "driverlib/gpio.h"
-#include "driverlib/pwm.h"
-#include "driverlib/systick.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/interrupt.h"
+#include "AllHeaderFiles.h"
 #include "buttons4.h"
-
-#include "inc/hw_ints.h"
-#include "utils/ustdlib.h"
-#include "stdlib.h"
-#include "OrbitOLED/OrbitOLEDInterface.h"
 #include "motor.h"
 
 
-/**********************************************************
- * Generates a single PWM signal on Tiva board pin J4-05 =
- * PC5 (M0PWM7).  This is the same PWM output as the
- * helicopter main rotor.
- **********************************************************/
+/*
+    pwm.c
 
-/**********************************************************
- * Constants
- **********************************************************/
-// PWM configuration
-#define PWM_RATE_HZ             300
-#define PWM_DUTY_MAX            95
-#define PWM_DUTY_MIN            5
+    Created on: 13/05/2019
+    Team_members: Abhimanyu Chhabra(99799242), Saranya Ramani(27179399), Jin Kim(79903309)
+ */
 
-#define PWM_DIVIDER_CODE        SYSCTL_PWMDIV_4
-#define PWM_DIVIDER             1
+/*
+   pwm.c initializes two PWM signals
 
-//Second PWM Config
-#define PWM_SEC_START_DUTY      0 //10
-#define PWM_MAIN_START_DUTY     0 //50
+   1. PWM output on J4-05 (M0PWM7) with fixed frequency (250Hz)
+   2. PWM output on J3-10 (M1PWM5) with fixed frequency (200Hz)
 
-//  PWM Hardware Details M0PWM7 (gen 3)
-//  ---Main Rotor PWM: PC5, J4-05
-#define PWM_MAIN_BASE           PWM0_BASE
-#define PWM_MAIN_GEN            PWM_GEN_3
-#define PWM_MAIN_OUTNUM         PWM_OUT_7
-#define PWM_MAIN_OUTBIT         PWM_OUT_7_BIT
-#define PWM_MAIN_PERIPH_PWM     SYSCTL_PERIPH_PWM0
-#define PWM_MAIN_PERIPH_GPIO    SYSCTL_PERIPH_GPIOC
-#define PWM_MAIN_GPIO_BASE      GPIO_PORTC_BASE
-#define PWM_MAIN_GPIO_CONFIG    GPIO_PC5_M0PWM7
-#define PWM_MAIN_GPIO_PIN       GPIO_PIN_5
+   Functions based on week3_lab - pwmGen.c are: (Author - P.J. Bones)
+   1.void init_pwm_clock (void)
+   2.void setPWM (uint32_t ui32Freq, uint32_t ui32Duty) - set_main_pwm (uint32_t ui32Duty) &  void set_tail_pwm(uint32_t ui32Duty)
+
+ */
+
+#include "pwm.h"
 
 
-//PWM Hardware Details M1PWM5 (gen 2)
-//  ---Secondary Rotor PWM: PF1, J4-05
-#define PWM_SEC_BASE            PWM1_BASE
-#define PWM_SEC_GEN             PWM_GEN_2
-#define PWM_SEC_OUTNUM          PWM_OUT_5
-#define PWM_SEC_OUTBIT          PWM_OUT_5_BIT
-#define PWM_SEC_PERIPH_PWM      SYSCTL_PERIPH_PWM1
-#define PWM_SEC_PERIPH_GPIO     SYSCTL_PERIPH_GPIOF
-#define PWM_SEC_GPIO_BASE       GPIO_PORTF_BASE
-#define PWM_SEC_GPIO_CONFIG     GPIO_PF1_M1PWM5
-#define PWM_SEC_GPIO_PIN        GPIO_PIN_1
-
-/********************************************************
- * Function to set the freq, duty cycle of M0PWM7
- ********************************************************/
 void
-SetMainPWM (uint32_t ui32Duty)
+init_pwm_clock (void)
 {
-    // Calculate the PWM period corresponding to the freq.
-    uint32_t ui32Period = SysCtlClockGet() / PWM_DIVIDER / PWM_RATE_HZ;
-
-    PWMGenPeriodSet(PWM_MAIN_BASE, PWM_MAIN_GEN, ui32Period);
-    PWMPulseWidthSet(PWM_MAIN_BASE, PWM_MAIN_OUTNUM, ui32Period * ui32Duty / 100);
+    SysCtlPWMClockSet(PWM_DIVIDER_CODE); // Set the PWM clock rate (using the prescaler)
 }
 
-
-/*********************************************************
- * initialiseMainPWM
- * M0PWM7 (J4-05, PC5) is used for the main rotor motor
- *********************************************************/
+/*
+   void init_pwm (void) - initializes two pwm signals
+   M0PWM7 (J4-05, PC5) is used for the main rotor motor
+   M1PWM5 (J3-10, PF1) is used for the tail rotor motor
+ */
 void
-initialiseMainPWM (void)
+init_pwm (void)
 {
-    SysCtlPeripheralEnable(PWM_MAIN_PERIPH_PWM);
-    SysCtlPeripheralEnable(PWM_MAIN_PERIPH_GPIO);
-
     GPIOPinConfigure(PWM_MAIN_GPIO_CONFIG);
-    GPIOPinTypePWM(PWM_MAIN_GPIO_BASE, PWM_MAIN_GPIO_PIN);
+    GPIOPinConfigure(PWM_TAIL_GPIO_CONFIG);
+
+    GPIOPinTypePWM(PWM_MAIN_GPIO_BASE,
+                   PWM_MAIN_GPIO_PIN);
+    GPIOPinTypePWM(PWM_TAIL_GPIO_BASE,
+                   PWM_TAIL_GPIO_PIN);
 
     PWMGenConfigure(PWM_MAIN_BASE, PWM_MAIN_GEN,
                     PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
-    // Set the initial PWM parameters
-    SetMainPWM (PWM_MAIN_START_DUTY);
+    PWMGenConfigure(PWM_TAIL_BASE, PWM_TAIL_GEN,
+                        PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
 
     PWMGenEnable(PWM_MAIN_BASE, PWM_MAIN_GEN);
+    PWMGenEnable(PWM_TAIL_BASE, PWM_TAIL_GEN);
+
 
     // Disable the output.  Repeat this call with 'true' to turn O/P on.
     PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, false);
+
+    // Disable the output.  Repeat this call with 'true' to turn O/P on.
+    PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, false);
 }
 
-
-/********************************************************
- * Function to set the freq, duty cycle of M1PWM5
- ********************************************************/
 void
-SetTailPWM (uint32_t ui32Duty)
+turn_on_pwm_output(void)
+{
+    // Initialisation is complete, so turn on the output.
+    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, true);
+    PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, true);
+}
+
+void
+set_main_pwm (uint32_t ui32Duty)
 {
     // Calculate the PWM period corresponding to the freq.
     uint32_t ui32Period =
-        SysCtlClockGet() / PWM_DIVIDER / PWM_RATE_HZ;
+            SysCtlClockGet() / PWM_DIVIDER / MAIN_FREQ;
 
-    PWMGenPeriodSet(PWM_SEC_BASE, PWM_SEC_GEN, ui32Period);
-    PWMPulseWidthSet(PWM_SEC_BASE, PWM_SEC_OUTNUM,
-        ui32Period * ui32Duty / 100);
+    PWMGenPeriodSet(PWM_MAIN_BASE, PWM_MAIN_GEN, ui32Period);
+    PWMPulseWidthSet(PWM_MAIN_BASE, PWM_MAIN_OUTNUM,
+                     ui32Period * ui32Duty / 100);
 }
 
-/*********************************************************
- * initialiseTailPWM
- * M1PWM5 (J3-10, PF1) is used for the secondary rotor motor
- *********************************************************/
 void
-initialiseTailPWM (void)
+set_tail_pwm(uint32_t ui32Duty)
 {
-    SysCtlPeripheralEnable(PWM_SEC_PERIPH_PWM);
-    SysCtlPeripheralEnable(PWM_SEC_PERIPH_GPIO);
+    // Calculate the PWM period corresponding to the freq.
+    uint32_t ui32Period =
+            SysCtlClockGet() / PWM_DIVIDER / TAIL_FREQ;
 
-    GPIOPinConfigure(PWM_SEC_GPIO_CONFIG);
-    GPIOPinTypePWM(PWM_SEC_GPIO_BASE, PWM_SEC_GPIO_PIN);
-
-    PWMGenConfigure(PWM_SEC_BASE, PWM_SEC_GEN,
-                    PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
-    // Set the initial PWM parameters
-    SetTailPWM (PWM_SEC_START_DUTY);
-
-    PWMGenEnable(PWM_SEC_BASE, PWM_SEC_GEN);
-
-    // Disable the output.  Repeat this call with 'true' to turn O/P on.
-    PWMOutputState(PWM_SEC_BASE, PWM_SEC_OUTBIT, false);
+    PWMGenPeriodSet(PWM_TAIL_BASE, PWM_TAIL_GEN, ui32Period);
+    PWMPulseWidthSet(PWM_TAIL_BASE, PWM_TAIL_OUTNUM,
+                     ui32Period * ui32Duty / 100);
 }
 
-/********************************************************
-* resetmotor
-* Resets the Peripherals for the GPIO Pins and PWM pins
- ********************************************************/
 void
-resetmotor(void)
+set_duty_cycle_for_main_and_tail_motor(uint32_t main_duty,uint32_t tail_duty)
 {
-    SysCtlPeripheralReset (PWM_MAIN_PERIPH_GPIO); // Used for PWM output
-    SysCtlPeripheralReset (PWM_MAIN_PERIPH_PWM);  // Main Rotor PWM
-    SysCtlPeripheralReset (PWM_SEC_PERIPH_GPIO); // Used for PWM output
-    SysCtlPeripheralReset (PWM_SEC_PERIPH_PWM);  // Main Rotor PWM
-}
-
-/********************************************************
-* initmotor
-* Initializes the main and secondary PWM modules
- ********************************************************/
-void
-initmotor(void)
-{
-    // As a precaution, make sure that the peripherals used are reset
-
-    initialiseMainPWM ();
-    initialiseTailPWM ();
-
-    // Initialization is complete, so turn on the output.
-    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, true);
-    PWMOutputState(PWM_SEC_BASE, PWM_SEC_OUTBIT, true);
+    set_main_pwm(main_duty);
+    set_tail_pwm(tail_duty);
 }

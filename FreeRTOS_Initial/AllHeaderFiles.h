@@ -20,6 +20,7 @@
 #include "driverlib/interrupt.h"
 #include "driverlib/debug.h"
 #include "driverlib/rom.h"
+#include "driverlib/debug.h"
 
 
 #include "utils/ustdlib.h"

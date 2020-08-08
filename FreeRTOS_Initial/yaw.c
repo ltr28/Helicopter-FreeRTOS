@@ -153,8 +153,9 @@ void YawIntHandler (void) {
 void initYaw (void) {
 
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+    // while(!SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB));
 
-    //SysCtlDelay(SysCtlClockGet() / 12);
+    SysCtlDelay(SysCtlClockGet()/12);
 
     GPIOPinTypeGPIOInput(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1); //Sets PIN) & PIN1 as inputs
     GPIOPadConfigSet(GPIO_PORTB_BASE, GPIO_PIN_0|GPIO_PIN_1, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD);
