@@ -57,8 +57,7 @@ QueueHandle_t xADCQueue;
 void
 adc_int_handler(void)
 {
-    // Clean up, clearing the interrupt
-    ADCIntClear(ADC0_BASE, 3);
+
 
     xHigherPriorityTaskWoken = pdFALSE;
 
@@ -66,6 +65,8 @@ adc_int_handler(void)
     ADCSequenceDataGet(ADC0_BASE, 3, &ulValue);
     xQueueSendFromISR(xADCQueue, &ulValue,  &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+    // Clean up, clearing the interrupt
+    ADCIntClear(ADC0_BASE, 3);
 
 
 }
@@ -81,6 +82,7 @@ init_adc (void)
 {
     // The ADC0 peripheral must be enabled for configuration and use.
     SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
+    SysCtlDelay(SysCtlClockGet()/12);
 
     // Enable sample sequence 3 with a processor signal trigger.  Sequence 3
     // will do a single sample when the processor sends a signal to start the
@@ -171,7 +173,7 @@ get_percentage(void)
 
 }
 
-static void AdcTriggerTask(void *pvParameters)
+void AdcTriggerTask(void *pvParameters)
 {
     TickType_t xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
@@ -179,6 +181,7 @@ static void AdcTriggerTask(void *pvParameters)
     xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
     UARTprintf("Adc Trigger task starting\n ");
     xSemaphoreGive(g_pUARTSemaphore);
+
 
     while(1)
     {
@@ -190,7 +193,7 @@ static void AdcTriggerTask(void *pvParameters)
 
 
 
-static void AdcreceiveTask(void *p)
+void AdcreceiveTask(void *p)
 {
 
     TickType_t xTime;
@@ -208,7 +211,7 @@ static void AdcreceiveTask(void *p)
 
         if(xQueueReceive(xADCQueue, &adcreceive, 0) == pdTRUE)
         {
-            printf("receiving_nicely - ADC = %d\n", adcreceive);
+//            printf("receiving_nicely - ADC = %d\n", adcreceive);
         }
 
         // Background task: calculate the (approximate) mean of the values in the
@@ -223,7 +226,7 @@ static void AdcreceiveTask(void *p)
 
         average = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
         percentage = (200*(landed_position - average) + range)/(2*range);
-        printf("Altitude = %d \n", percentage);
+        // printf("Altitude = %d \n", percentage);
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
 
     }

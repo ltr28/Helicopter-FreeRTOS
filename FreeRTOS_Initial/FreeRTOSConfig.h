@@ -82,11 +82,15 @@
 #define configUSE_RECURSIVE_MUTEXES         1
 #define configCHECK_FOR_STACK_OVERFLOW      2
 #define configSUPPORT_DYNAMIC_ALLOCATION    1
-
 #define configMAX_PRIORITIES                16
 #define configMAX_CO_ROUTINE_PRIORITIES     ( 2 )
 #define configQUEUE_REGISTRY_SIZE           10
 
+//timer configuration
+#define configUSE_TIMERS                    1
+#define configTIMER_TASK_PRIORITY           3
+#define configTIMER_QUEUE_LENGTH            6
+#define configTIMER_TASK_STACK_DEPTH        1048
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */
 

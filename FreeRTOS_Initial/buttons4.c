@@ -16,10 +16,27 @@
 
 // *******************************************************
 
-#include "allheaderFiles.H"
+#include <stdint.h>
+#include <stdbool.h>
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/gpio.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/debug.h"
 #include "inc/tm4c123gh6pm.h"  // Board specific defines (for PF0)
-#include "buttons4.h"
+#include "utils/uartstdio.h"
+#include "driverlib/uart.h"
 
+//FreeRTOS Includes
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "priorities.h"
+#include "buttons4.h"
+#include <timers.h>
+
+extern xSemaphoreHandle g_pUARTSemaphore;
 #define BUT_TASK_STACK_SIZE     128
 
 
@@ -30,6 +47,13 @@ static bool but_state[NUM_BUTS];    // Corresponds to the electrical state
 static uint8_t but_count[NUM_BUTS];
 static bool but_flag[NUM_BUTS];
 static bool but_normal[NUM_BUTS];   // Corresponds to the electrical state
+
+static TimerHandle_t timer;
+
+int32_t set_alt_point = 0; // desired altitude
+int32_t set_yaw_point = 0; // desired yaw
+int32_t mapped_set_yaw_point  = 0; // mapped_set_yaw_point stays within 360 to -360 unlike set_yaw_point. For display purposes.
+
 
 // *******************************************************
 // initButtons: Initialise the variables associated with the set of buttons
@@ -43,24 +67,24 @@ initButtons (void)
     SysCtlPeripheralEnable (UP_BUT_PERIPH);
     GPIOPinTypeGPIOInput (UP_BUT_PORT_BASE, UP_BUT_PIN);
     GPIOPadConfigSet (UP_BUT_PORT_BASE, UP_BUT_PIN, GPIO_STRENGTH_2MA,
-       GPIO_PIN_TYPE_STD_WPD);
+                      GPIO_PIN_TYPE_STD_WPD);
     but_normal[UP] = UP_BUT_NORMAL;
     // DOWN button (active HIGH)
     SysCtlPeripheralEnable (DOWN_BUT_PERIPH);
     GPIOPinTypeGPIOInput (DOWN_BUT_PORT_BASE, DOWN_BUT_PIN);
     GPIOPadConfigSet (DOWN_BUT_PORT_BASE, DOWN_BUT_PIN, GPIO_STRENGTH_2MA,
-       GPIO_PIN_TYPE_STD_WPD);
+                      GPIO_PIN_TYPE_STD_WPD);
     but_normal[DOWN] = DOWN_BUT_NORMAL;
     // LEFT button (active LOW)
     SysCtlPeripheralEnable (LEFT_BUT_PERIPH);
     GPIOPinTypeGPIOInput (LEFT_BUT_PORT_BASE, LEFT_BUT_PIN);
     GPIOPadConfigSet (LEFT_BUT_PORT_BASE, LEFT_BUT_PIN, GPIO_STRENGTH_2MA,
-       GPIO_PIN_TYPE_STD_WPU);
+                      GPIO_PIN_TYPE_STD_WPU);
     but_normal[LEFT] = LEFT_BUT_NORMAL;
     // RIGHT button (active LOW)
-      // Note that PF0 is one of a handful of GPIO pins that need to be
-      // "unlocked" before they can be reconfigured.  This also requires
-      //      #include "inc/tm4c123gh6pm.h"
+    // Note that PF0 is one of a handful of GPIO pins that need to be
+    // "unlocked" before they can be reconfigured.  This also requires
+    //      #include "inc/tm4c123gh6pm.h"
     SysCtlPeripheralEnable (RIGHT_BUT_PERIPH);
     //---Unlock PF0 for the right button:
     GPIO_PORTF_LOCK_R = GPIO_LOCK_KEY;
@@ -68,8 +92,9 @@ initButtons (void)
     GPIO_PORTF_LOCK_R = GPIO_LOCK_M;
     GPIOPinTypeGPIOInput (RIGHT_BUT_PORT_BASE, RIGHT_BUT_PIN);
     GPIOPadConfigSet (RIGHT_BUT_PORT_BASE, RIGHT_BUT_PIN, GPIO_STRENGTH_2MA,
-       GPIO_PIN_TYPE_STD_WPU);
+                      GPIO_PIN_TYPE_STD_WPU);
     but_normal[RIGHT] = RIGHT_BUT_NORMAL;
+    SysCtlDelay(SysCtlClockGet()/12);
 
     for (i = 0; i < NUM_BUTS; i++)
     {
@@ -135,23 +160,107 @@ checkButton (uint8_t butName)
     return NO_CHANGE;
 }
 
-
-
-uint8_t
-checkButton (uint8_t butName)
+/*
+    void setpoint_calculations(void) is used to change the desired altitude and the desired yaw according to the buttons pressed.
+    UP button - desired altitude increases by 10%
+    DOWN button - desired altitude decreases by 10%
+    LEFT button - desired yaw decreases by 15 degrees
+    RIGHT button - desired yaw increases by 15 degrees
+ */
+void
+setpoint_calculations (void)
 {
-	if (but_flag[butName])
-	{
-		but_flag[butName] = false;
-		if (but_state[butName] == but_normal[butName])
-			return RELEASED;
-		else
-			return PUSHED;
-	}
-	return NO_CHANGE;
+    if ((checkButton (UP) == PUSHED))
+    {
+        set_alt_point += 10;
+
+        if(set_alt_point > 100) // if desired altitude is greater than or equal to 100% set it back to 100%.
+        {
+            set_alt_point = 100;
+        }
+    }
+
+    if ((checkButton (DOWN) == PUSHED))
+    {
+        set_alt_point -= 10;
+
+        if (set_alt_point < 0) // if desired altitude is less than 30%(stable altitude) set it back to 30%.
+        {
+            set_alt_point  =  0;
+        }
+    }
+
+    if ((checkButton (LEFT) == PUSHED))
+    {
+        set_yaw_point -= 15;
+        mapped_set_yaw_point -= 15;
+    }
+
+    if ((checkButton (RIGHT) == PUSHED))
+    {
+        set_yaw_point += 15;
+        mapped_set_yaw_point += 15;
+    }
+
+    if(mapped_set_yaw_point >= 360 || mapped_set_yaw_point <= -360) /*
+                                                                      set the mapped yaw point back to zero if it goes beyond the range
+                                                                      of 360 to -360 for displaying purposes
+     */
+    {
+        mapped_set_yaw_point = 0;
+    }
+    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+    UARTprintf("YAW = %i\n", set_yaw_point);
+    UARTprintf("Map_Yaw = %i\n",mapped_set_yaw_point);
+    UARTprintf("Alt = %i\n", set_alt_point );
+    UARTprintf("                          " );
+    xSemaphoreGive(g_pUARTSemaphore);
 }
 
-static void
+void
+ButTask(void *pvParameters){
+
+    TickType_t xTime;
+    xTime = xTaskGetTickCount();
+
+    while(1)
+    {
+        setpoint_calculations();
+        vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
+    }
+}
+
+
+void vTimerCallback(TimerHandle_t xTimer)
+{
+    configASSERT( xTimer );
+    updateButtons();
+
+}
+
+void init_button_timer(void){
+
+    timer = xTimerCreate("Button_timmer", pdMS_TO_TICKS(10), pdTRUE, ( void * ) 0, vTimerCallback );
+    if(timer == NULL)
+    {
+        while(1)
+        {
+            UARTprintf("Timer not created properly");
+        }
+    }
+    else
+    {
+        /* Start the timer.  No block time is specified, and
+                 even if one was it would be ignored because the RTOS
+                 scheduler has not yet been started. */
+        if(xTimerStart(timer, 0 ) != pdPASS )
+        {
+            /* The timer could not be set into the Active
+                     state. */
+            UARTprintf("Timer not active");
+        }
+    }
+}
 
 uint32_t
 initButTask(void)

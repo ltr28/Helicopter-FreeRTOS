@@ -11,6 +11,7 @@
 #include "altitude.h"
 #include "uart.h"
 #include "yaw.h"
+#include "buttons4.h"
 
 //
 // The mutex that protects concurrent access of UART from multiple tasks.
@@ -78,58 +79,49 @@ int main(void)
     g_pUARTSemaphore = xSemaphoreCreateMutex();
     peripherals_reset (); // all the peripherals are reset
     pheripherals_enable (); // all the peripherals are enabled
-    init_clock();
 
-    initialiseUSB_UART ();
+    init_clock();
+    initButtons();
+    initialiseUSB_UART();
     init_adc();
     initYaw();
+    init_button_timer();
     IntMasterEnable();
 
 
+//    if (initAltTask() != 0)
+//    {
+//        while(1)
+//        {
+//            //add blinking LED routine here
+//            //print to UART Altitude Task not working
+//        }
+//    }
+//
+//    if(Altitude_calc() != 0 )
+//    {
+//        while(1)
+//        {
+//            //printf("Virus\n");
+//        }
+//    }
+////
+//    if(inityawTask() != 0){
+//        while(1)
+//        {
+//            //add blinking LED routine here
+//            //print to UART Yaw Task not working
+//            //printf("Virus\n");
+//        }
+//    }
 
-
-
-
-    //    SysCtlDelay(SysCtlClockGet() / 12);
-    //    calculate_landed_position();
-
-
-
-
-    if (initAltTask() != 0)
-    {
+    if(initButTask() != 0){
         while(1)
         {
-            //add blinking LED routine here
-            //print to UART Altitude Task not working
+            //printf("Virus\n");
         }
+
     }
-
-    if(Altitude_calc() != 0 )
-    {
-        while(1)
-        {
-            printf("Virus\n");
-        }
-    }
-
-    if(inityawTask() != 0){
-        while(1)
-        {
-            //add blinking LED routine here
-            //print to UART Yaw Task not working
-            printf("Virus\n");
-        }
-    }
-
-        if(initButTask() != 0){
-            while(1)
-            {
-                //add blinking LED routine here
-                //print to UART Button Task not working
-            }
-
-        }
 
 
 
@@ -137,7 +129,9 @@ int main(void)
 
     while(1)
     {
+        //printf("The main function is outrageous\n");
     }
+
 }
 
 

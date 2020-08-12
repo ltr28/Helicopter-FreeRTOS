@@ -1,26 +1,11 @@
-//*****************************************************************************
-//
-// yaw - Calculating yaw slot numbers and angles functions through an Interrupt
-//
-// Author:  N. James
-//          L. Trenberth
-//          M. Arunchayanon
-// Last modified:   31.5.2019
-//*****************************************************************************
-#include <pwm.h>
+
 #include "AllHeaderFiles.h"
-#include "control.h"
 
 
 
 
 #define degrees_in_circle 360
 #define slots_in_rig_circle 448 //slots in rig circle*4 = 112*4  = 448. Because 4 interrupts generated per pulse
-
-#define FIND_REF_MAIN           30 //duty cycle for finding the reference point
-#define FIND_REF_TAIL           40
-
-
 extern xSemaphoreHandle g_pUARTSemaphore;
 
 typedef enum {STATE1 = 0, STATE2 = 2, STATE3 = 3, STATE4 = 1} yawStates_t ;  // 0b00 0b10 0b11 0b01
@@ -179,7 +164,7 @@ void yawTask (void *pvparameters)
     {
         //GPIOIntRegister(GPIO_PORTB_BASE, YawIntHandler); //If interrupt occurs, run YawIntHandler
         calculate_degrees();
-        //
+
         xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
         UARTprintf("%d\n ", mapped_degrees);
         xSemaphoreGive(g_pUARTSemaphore);
@@ -192,7 +177,7 @@ void yawTask (void *pvparameters)
 uint32_t inityawTask(void)
 {
     if(xTaskCreate(yawTask, (const portCHAR *)"Get Yaw", 128, NULL,
-                   2, NULL) != pdTRUE)
+                   PRIORITY_YAW_TASK, NULL) != pdTRUE)
     {
         return(1);
     }

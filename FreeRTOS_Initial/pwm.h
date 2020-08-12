@@ -8,7 +8,7 @@
 #ifndef PWM_H_
 #define PWM_H_
 
-#include "all_h.h"
+
 
 // PWM configuration
 #define MAIN_FREQ  250
@@ -67,3 +67,4 @@ turn_on_pwm_output (void);
 void
 set_duty_cycle_for_main_and_tail_motor (uint32_t main_duty,uint32_t tail_duty);
 
+#endif /*PWM_H_*/
