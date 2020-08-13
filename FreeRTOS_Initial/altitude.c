@@ -26,7 +26,7 @@
 extern xSemaphoreHandle g_pUARTSemaphore;
 BaseType_t xHigherPriorityTaskWoken;
 
-#define ALTITUDETASKSTACKSIZE        1024         // Stack size in words
+#define ALTITUDETASKSTACKSIZE       128      // Stack size in words
 #define BUF_SIZE 25
 #define ADC_QUEUE_ITEM_SIZE sizeof(uint32_t)
 
@@ -178,9 +178,9 @@ void AdcTriggerTask(void *pvParameters)
     TickType_t xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
 
-    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-    UARTprintf("Adc Trigger task starting\n ");
-    xSemaphoreGive(g_pUARTSemaphore);
+//    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+//    UARTprintf("Adc Trigger task starting\n ");
+//    xSemaphoreGive(g_pUARTSemaphore);
 
 
     while(1)
@@ -226,7 +226,7 @@ void AdcreceiveTask(void *p)
 
         average = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
         percentage = (200*(landed_position - average) + range)/(2*range);
-        // printf("Altitude = %d \n", percentage);
+        //printf("Altitude = %d \n", percentage);
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
 
     }
@@ -258,7 +258,7 @@ uint32_t
 Altitude_calc(void)
 {
 
-    if(xTaskCreate(AdcreceiveTask, (const portCHAR *)"Altitude_Calc", 1024, NULL,
+    if(xTaskCreate(AdcreceiveTask, (const portCHAR *)"Altitude_Calc", 500, NULL,
                    2, NULL) != pdTRUE)
     {
         return(1);
@@ -272,55 +272,3 @@ Altitude_calc(void)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//static void
-//AltitudeTask(void *pvParameters)
-//{
-//
-//    while(1)
-//   {
-//
-//        calculate_mean_adc_and_percentage();
-//
-//        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-//        UARTprintf("Current Altitude =  %d\n ", percentage);
-//        xSemaphoreGive(g_pUARTSemaphore);
-//        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(20));
-//   }
-//
-//
-//}
-
-
-
-//uint32_t AdcTriggerTask(void)

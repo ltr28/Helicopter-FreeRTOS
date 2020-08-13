@@ -31,7 +31,7 @@
 //
 //*****************************************************************************
 #define PRIORITY_ALT_TASK       3
-#define PRIORITY_YAW_TASK       3
+#define PRIORITY_YAW_TASK       4
 #define PRIORITY_BUT_TASK       2
 #define PRIORITY_CONTROL_TASK   4
 #define PRIORITY_DISP_TASK      2

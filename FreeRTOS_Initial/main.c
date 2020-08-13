@@ -12,6 +12,7 @@
 #include "uart.h"
 #include "yaw.h"
 #include "buttons4.h"
+#include "control.h"
 
 //
 // The mutex that protects concurrent access of UART from multiple tasks.
@@ -35,7 +36,7 @@ vApplicationStackOverflowHook(xTaskHandle *pxTask, char *pcTaskName)
     //
     while(1)
     {
-        UARTprintf("Stack Overflow. Shits going down\n");
+
     }
 }
 
@@ -81,44 +82,53 @@ int main(void)
     pheripherals_enable (); // all the peripherals are enabled
 
     init_clock();
+    init_pwm_clock ();
     initButtons();
     initialiseUSB_UART();
     init_adc();
     initYaw();
     init_button_timer();
+    init_pwm ();
+    turn_on_pwm_output();
+    set_initial_value_of_slider_switch();
     IntMasterEnable();
 
 
-//    if (initAltTask() != 0)
-//    {
-//        while(1)
-//        {
-//            //add blinking LED routine here
-//            //print to UART Altitude Task not working
-//        }
-//    }
-//
-//    if(Altitude_calc() != 0 )
-//    {
-//        while(1)
-//        {
-//            //printf("Virus\n");
-//        }
-//    }
-////
-//    if(inityawTask() != 0){
-//        while(1)
-//        {
-//            //add blinking LED routine here
-//            //print to UART Yaw Task not working
-//            //printf("Virus\n");
-//        }
-//    }
+    if (initAltTask() != 0)
+    {
+        while(1)
+        {
+
+        }
+    }
+
+    if(Altitude_calc() != 0 )
+    {
+        while(1)
+        {
+
+        }
+    }
+
+    if(inityawTask() != 0){
+        while(1)
+        {
+
+        }
+    }
 
     if(initButTask() != 0){
         while(1)
         {
-            //printf("Virus\n");
+
+        }
+
+    }
+
+    if(initControlTask != 0){
+        while(1)
+        {
+
         }
 
     }
@@ -129,7 +139,7 @@ int main(void)
 
     while(1)
     {
-        //printf("The main function is outrageous\n");
+
     }
 
 }
@@ -175,15 +185,8 @@ int main(void)
 
 
 
-//
-////    if(initControlTask != 0){
-////        while(1)
-////        {
-////            //add blinking LED routine here
-////            //print to UART Control Task not working
-////        }
-////
-////    }
+
+
 ////
 
 ////

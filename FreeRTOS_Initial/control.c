@@ -32,7 +32,7 @@
    KI_yaw - Integral gain for the yaw
    KD_yaw - Derivative gain for the yaw
  */
-#define KP_yaw 0.9
+#define KP_yaw 1.2
 #define KI_yaw 0.05
 #define KD_yaw 1.2
 
@@ -44,7 +44,7 @@
 
 typedef enum  {LANDED,ORIENTATION,TAKEOFF,FLYING,LANDING} flight_modes_t;
 flight_modes_t current_fligt_mode = LANDED;
-bool first = true;
+bool first = false;
 
 
 const double delta_time = 0.01; // delta time is the same as the sampling time of the adc.
@@ -55,13 +55,13 @@ double yaw_error = 0;
 double yaw_last_error = 0;
 double yaw_integrated_error = 0;
 
+
 int32_t yaw_duty = 0; // stores the duty cycle of the tail rotor
 int32_t alt_duty = 0; // stores the duty cycle of the main rotor
 
 
-uint8_t slider_switch_value  = 0; // stores the current value of the slider switch
+uint8_t current_slider_switch_value  = 0; // stores the current value of the slider switch
 uint8_t initial_slider_switch_value = 0; // stores the initial value of the slider switch when everything is initialized in int main(void)
-
 
 void
 set_initial_value_of_slider_switch (void)
@@ -69,71 +69,33 @@ set_initial_value_of_slider_switch (void)
     initial_slider_switch_value =  GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
 }
 
-uint8_t
-get_initial_value_of_slider_switch (void)
-{
-    return initial_slider_switch_value;
-}
-int32_t
-get_yaw_duty (void)
-{
-    return yaw_duty;
-}
-
-int32_t
-get_alt_duty (void)
-{
-    return alt_duty;
-}
-
-int32_t
-get_mapped_set_yaw_point (void)
-{
-    return mapped_set_yaw_point;
-}
-
-int32_t
-get_set_alt_point (void)
-{
-    return set_alt_point;
-}
 
 /*
-   char* get_current_flight_mode(void) returns the current_flight_mode in string for sending it over the uart.
+   void find_yaw_ref(void) finds the reference yaw position. This is simply achieved by rotating the
+   helicopter at a constant duty cycle for the tail and main motors and checking if the
+   reference signal has gone low (Active low configuration). If the signal goes low  the current degrees is set to zero.
+   Called in case ORIENTATION: - void flight_modes_FSM (void).
  */
-char*
-get_current_flight_mode (void)
+void YawRefHandler(void)
 {
+    GPIOIntClear(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN); // clears the interrupt flag
+    int yawref  =  GPIOPinRead(GPIO_PORTC_BASE, GPIO_PIN_4);
 
-    if(current_fligt_mode == LANDED)
+    if(first == false)
     {
-        return "LANDED";
-    }
+        if (yawref == 0)
+        {
+            first = true;
+        }
 
-    if(current_fligt_mode == LANDING)
-    {
-        return  "LANDING";
-    }
+        else()
+        {
 
-    if(current_fligt_mode == TAKEOFF)
-    {
-        return "TAKE OFF";
-    }
-
-    if(current_fligt_mode  == FLYING)
-    {
-        return "FLYING";
-    }
-
-    if(current_fligt_mode == ORIENTATION)
-    {
-        return "ORIENTATION";
-    }
-    else
-    {
-        return 0;
+        }
     }
 }
+
+
 
 /*
    void init_slider_switch_and_yaw_reference_pins(void) initializes the slider switch and the yaw reference gpio pins as an input.
@@ -143,14 +105,24 @@ get_current_flight_mode (void)
 void init_slider_switch_and_yaw_reference_pins(void)
 {
 
-    GPIODirModeSet(SLIDER_SWITCH_GPIO_BASE,
-                   SLIDER_SWITCH_GPIO_PIN,
-                   GPIO_DIR_MODE_IN);
 
     GPIODirModeSet(YAW_REFERENCE_GPIO_BASE,
                    YAW_REFERENCE_GPIO_PIN,
                    GPIO_DIR_MODE_IN);
 
+    GPIOPadConfigSet(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN,
+                     GPIO_STRENGTH_4MA,
+                     GPIO_PIN_TYPE_STD_WPU);
+
+    GPIOIntTypeSet(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN , GPIO_LOW_LEVEL); //Trigger interrupts on both edges of wave changes on PB0 and PB1
+    GPIOIntEnable(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN); //Enable interrupts from PB0 and PB1
+    GPIOIntRegister(YAW_REFERENCE_GPIO_BASE,YawRefHandler); //If interrupt occurs, run YawIntHandler
+    IntEnable(INT_GPIOB); //Enable interrupts on B.
+
+
+    GPIODirModeSet(SLIDER_SWITCH_GPIO_BASE,
+                   SLIDER_SWITCH_GPIO_PIN,
+                   GPIO_DIR_MODE_IN);
 
 
     GPIOPadConfigSet(SLIDER_SWITCH_GPIO_BASE,
@@ -158,9 +130,7 @@ void init_slider_switch_and_yaw_reference_pins(void)
                      GPIO_STRENGTH_4MA,
                      GPIO_PIN_TYPE_STD_WPD);
 
-    GPIOPadConfigSet(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN,
-                     GPIO_STRENGTH_4MA,
-                     GPIO_PIN_TYPE_STD_WPU);
+
 }
 
 
@@ -247,34 +217,6 @@ duty_cycle_based_on_pid (void)
                                            pid_yaw_control_update(KP_yaw, KI_yaw, KD_yaw, delta_time));
 }
 
-/*
-   void find_yaw_ref(void) finds the reference yaw position. This is simply achieved by rotating the
-   helicopter at a constant duty cycle for the tail and main motors and checking if the
-   reference signal has gone low (Active low configuration). If the signal goes low  the current degrees is set to zero.
-   Called in case ORIENTATION: - void flight_modes_FSM (void).
- */
-void
-find_yaw_ref (void)
-{
-    if(first == true)
-    {
-        int yawref  =  GPIOPinRead(GPIO_PORTC_BASE, GPIO_PIN_4);
-
-        if ((yawref != 0))
-        {
-            set_duty_cycle_for_main_and_tail_motor(10, 20); // keep rotating the helicopter while the reference signal is high
-
-        }
-
-        else if (yawref == 0)
-        {
-            first = false;
-            set_current_slot_count(0); // set the current degrees to zero
-            set_mapped_slot_count(0);  // set the mapped degrees to zero
-            current_fligt_mode = TAKEOFF;
-        }
-    }
-}
 
 /*
    void landing (void) is being used for the smooth landing of the helicopter.
@@ -305,7 +247,7 @@ landing (void)
     if(get_actual_degrees() == 0 && get_percentage() == 0) /*
                                                               Once the current altitude and current degrees are equal to zero,
                                                               go to landed mode.
-                                                            */
+     */
     {
         current_fligt_mode  = LANDED;
     }
@@ -323,14 +265,10 @@ landing (void)
 void
 flight_modes_FSM (void)
 {
-    slider_switch_value = GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7); // Read slider switch
-
-
-    if(get_initial_value_of_slider_switch() == 128 && slider_switch_value == 0) /*
-                                                                                  If the initial value of the slider switch is high and the current value
+    current_slider_switch_value = GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7); // Read slider switch
+    if(initial_slider_switch_value == 128 && current_slider_switch_value == 0) /*If the initial value of the slider switch is high and the current value
                                                                                   of the slider switch is low - (the slider switch has been pushed down),
-                                                                                  so set the initial value to low. Go to case LANDED:
-     */
+                                                                                  so set the initial value to low. Go to case LANDED:*/
     {
         initial_slider_switch_value = 0;
     }
@@ -345,14 +283,20 @@ flight_modes_FSM (void)
        2.Heli goes to TAKE OFF mode once the yaw reference position is found
      */
     case ORIENTATION:
-        find_yaw_ref();
+        if(first == false)
+        {
+            set_duty_cycle_for_main_and_tail_motor(10,15);
+        }
+
+        else(current_fligt_mode == TAKEOFF);
+
         break;
 
-    /*
+        /*
        In TAKE OFF:
        1.Heli goes up to stable altitude of 30% facing the yaw reference position
        2.Goes to FLYING mode if the current altitude = 30% and the current degrees = 0.
-     */
+         */
     case TAKEOFF:
         set_yaw_point = 0;
         duty_cycle_based_on_pid();
@@ -371,11 +315,11 @@ flight_modes_FSM (void)
         }
         break;
 
-    /*
+        /*
       In FLYING:
       1.Buttons left, right, up and down can be operated to change the altitude and yaw via setpoint_calculations();.
       2.Goes to LANDING mode if the slider switch is pushed down.
-     */
+         */
     case FLYING:
         setpoint_calculations();
         duty_cycle_based_on_pid();
@@ -386,26 +330,26 @@ flight_modes_FSM (void)
                                                                current_slot_count is set to mapped_slot_count which stays within 448 to -448. So the
                                                                actual degrees are set within 360 to -360. This is done so that the heli doesn't
                                                                rotate million times to come back to zero degrees because of pid.
-                                                              */
+             */
             current_fligt_mode = LANDING;
         }
         break;
 
-    /*
+        /*
       In LANDING:
       1.Heli starts landing smoothly facing the yaw reference position
       2.If the current degrees and current altitude is equal to zero, the Heli goes into
         LANDED mode
-     */
+         */
     case LANDING:
         landing();
         break;
 
-    /*
+        /*
       In LANDED:
       1.The duty cycle for both motors, the errors for pid update for altitude and yaw and the desired altitude and yaw are all set to zero
       2.Pushing the slider switch up will cause the helicopter to go either in Orientation mode or Take off mode.
-     */
+         */
     case LANDED:
         set_duty_cycle_for_main_and_tail_motor(0,0);
         alt_error = 0;
@@ -418,26 +362,26 @@ flight_modes_FSM (void)
         set_alt_point = 0;
         mapped_set_yaw_point = 0;
 
-        if(slider_switch_value == 128 && get_initial_value_of_slider_switch() == 0) /*
+        if(current_slider_switch_value == 128 && get_initial_value_of_slider_switch() == 0) /*
                                                                                       The if statement prevents the heli from going into ORIENTATION mode
                                                                                       from landed mode if the slider switch is already pushed up at the start
                                                                                       of the program.
-                                                                                     */
+         */
         {
-            if(first)
+            if(first == false)
             {
                 current_fligt_mode = ORIENTATION; /*
-                                                     current_flight_mode goes into orientation if first == true,
+                                                     current_flight_mode goes into orientation if yawref == true,
                                                      which means the reference has not been found. Once the reference
-                                                     is found first is set to false.
-                                                    */
+                                                     is found yawref is set to false.
+                 */
             }
 
             else
             {
                 current_fligt_mode = TAKEOFF; /*
-                                                current_flight mode is set to take off mode if the first == false
-                                               */
+                                                current_flight mode is set to take off mode if the yawref == false
+                 */
             }
         }
         break;

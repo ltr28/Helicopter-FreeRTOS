@@ -37,7 +37,7 @@
 #include <timers.h>
 
 extern xSemaphoreHandle g_pUARTSemaphore;
-#define BUT_TASK_STACK_SIZE     128
+#define BUT_TASK_STACK_SIZE     200
 
 
 // *******************************************************
@@ -209,12 +209,12 @@ setpoint_calculations (void)
     {
         mapped_set_yaw_point = 0;
     }
-    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-    UARTprintf("YAW = %i\n", set_yaw_point);
-    UARTprintf("Map_Yaw = %i\n",mapped_set_yaw_point);
-    UARTprintf("Alt = %i\n", set_alt_point );
-    UARTprintf("                          " );
-    xSemaphoreGive(g_pUARTSemaphore);
+//    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+////    UARTprintf("                          " );
+////    UARTprintf("Map_Yaw = %i\n",mapped_set_yaw_point);
+////    UARTprintf("Alt = %i\n", set_alt_point );
+////    UARTprintf("                          " );
+//    xSemaphoreGive(g_pUARTSemaphore);
 }
 
 void
@@ -240,7 +240,7 @@ void vTimerCallback(TimerHandle_t xTimer)
 
 void init_button_timer(void){
 
-    timer = xTimerCreate("Button_timmer", pdMS_TO_TICKS(10), pdTRUE, ( void * ) 0, vTimerCallback );
+    timer = xTimerCreate("Button_timmer", pdMS_TO_TICKS(5), pdTRUE, ( void * ) 0, vTimerCallback );
     if(timer == NULL)
     {
         while(1)

@@ -176,7 +176,7 @@ void yawTask (void *pvparameters)
 
 uint32_t inityawTask(void)
 {
-    if(xTaskCreate(yawTask, (const portCHAR *)"Get Yaw", 128, NULL,
+    if(xTaskCreate(yawTask, (const portCHAR *)"Get Yaw", 500, NULL,
                    PRIORITY_YAW_TASK, NULL) != pdTRUE)
     {
         return(1);
