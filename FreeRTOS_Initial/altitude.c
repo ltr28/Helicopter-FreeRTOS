@@ -35,8 +35,11 @@ static circBuf_t g_inBuffer; // Buffer of size BUF_SIZE integers (sample values)
 static uint16_t  landed_position = 2095;
 static uint16_t  average = 0;
 static int8_t    percentage = 0;
+
 static const int16_t range = 993; // mean adc value at (0% altitude - 100% altitude) = 993 approximately
+
 uint32_t adcreceive  = 0;
+
 
 
 QueueHandle_t xADCQueue;

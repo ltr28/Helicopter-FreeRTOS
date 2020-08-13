@@ -38,6 +38,7 @@ get_alt_duty (void);
 char*
 get_current_flight_mode (void);
 
-
+extern uint32_t
+initControlTask (void);
 
 #endif /* _CONTROL_H_ */

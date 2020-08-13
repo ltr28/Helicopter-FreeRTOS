@@ -13,10 +13,17 @@
    example which was given in PID 3 lecture notes of ENCE 361.
  */
 
+#include <stdint.h>
 #include "AllHeaderFiles.h"
 #include "altitude.h"
 #include "yaw.h"
 #include "pwm.h"
+#include "buttons4.h"
+
+int32_t current_slot_count = 0;
+int32_t mapped_slot_count = 0; //stays within 448 to -448
+int32_t actual_degrees = 0;
+int32_t mapped_degrees = 0; // stays within 360 to -360
 
 /* _alt - main_rotor
    KP_alt - Proportional gain for altitude
@@ -51,6 +58,7 @@ const double delta_time = 0.01; // delta time is the same as the sampling time o
 double alt_error = 0;
 double alt_last_error = 0;
 double alt_integrated_error = 0;
+
 double yaw_error = 0;
 double yaw_last_error = 0;
 double yaw_integrated_error = 0;
@@ -88,7 +96,10 @@ void YawRefHandler(void)
             first = true;
         }
 
-        else();
+        else
+        {
+
+        }
 
     }
 }
@@ -181,7 +192,7 @@ pid_yaw_control_update (double yaw_proportional_gain,
     double yaw_derivative_error;
     double yaw_control; // duty cycle for tail motor
 
-    yaw_error = set_yaw_point - get_actual_degrees();
+    yaw_error = set_yaw_point - actual_degrees;
     yaw_integrated_error += yaw_error * delta_t;
     yaw_derivative_error = (yaw_error - yaw_last_error) / delta_t;
     yaw_control = yaw_error * yaw_proportional_gain
@@ -229,7 +240,7 @@ landing (void)
     set_yaw_point = 0;
     mapped_set_yaw_point = 0;
     duty_cycle_based_on_pid();
-    if(get_actual_degrees() == 0)
+    if(actual_degrees == 0)
     {
         if(get_percentage() == set_alt_point)
         {
@@ -286,7 +297,10 @@ flight_modes_FSM (void)
             set_duty_cycle_for_main_and_tail_motor(10,15);
         }
 
-        else(current_fligt_mode == TAKEOFF);
+        else if(first == true)
+        {
+            current_fligt_mode == TAKEOFF;
+        }
 
         break;
 
@@ -299,15 +313,15 @@ flight_modes_FSM (void)
         set_yaw_point = 0;
         duty_cycle_based_on_pid();
 
-        if( get_actual_degrees() == set_yaw_point)
+        if( actual_degrees == set_yaw_point)
         {
-            if(get_percentage() == set_alt_point && set_alt_point < 30)
+            if(get_percentage() == set_alt_point && set_alt_point < 50)
             {
                 set_alt_point  += 10;
             }
         }
 
-        if(get_actual_degrees() == set_yaw_point && get_percentage() == 30)
+        if(actual_degrees() == set_yaw_point && get_percentage() == 50)
         {
             current_fligt_mode  = FLYING;
         }
@@ -319,16 +333,17 @@ flight_modes_FSM (void)
       2.Goes to LANDING mode if the slider switch is pushed down.
          */
     case FLYING:
-        setpoint_calculations();
-        duty_cycle_based_on_pid();
 
-        if((slider_switch_value == 0))
+        duty_cycle_based_on_pid();
+        get_percentage();
+
+
+        if(current_slider_switch_value == 0)
         {
-            set_current_slot_count(get_mapped_slot_count()); /*
+            current_slot_count = mapped_slot_count; /*
                                                                current_slot_count is set to mapped_slot_count which stays within 448 to -448. So the
                                                                actual degrees are set within 360 to -360. This is done so that the heli doesn't
-                                                               rotate million times to come back to zero degrees because of pid.
-             */
+                                                               rotate million times to come back to zero degrees because of pid.*/
             current_fligt_mode = LANDING;
         }
         break;
@@ -385,7 +400,7 @@ flight_modes_FSM (void)
     }
 }
 
-void yawTask (void *pvparameters)
+void control_task (void *pvparameters)
 {
     TickType_t xTime;
     xTime = xTaskGetTickCount();
@@ -397,4 +412,13 @@ void yawTask (void *pvparameters)
     }
 }
 
-uint16_t init
+uint32_t initControlTask (void)
+{
+    if(xTaskCreate(control_task(), (const portCHAR *)"Control_heli", 2000, NULL,
+                   PRIORITY_CONTROL_TASK, NULL) != pdTRUE)
+    {
+        return(1);
+    }
+
+    return(0);
+}

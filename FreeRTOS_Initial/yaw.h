@@ -2,26 +2,11 @@
 #define YAW_H_
 
 
-//*****************************************************************************
-//
-// Yaw - Calculating yaw slot numbers and angles functions through an Interrupt
-//
-// Author:  N. James
-//          L. Trenberth
-//          M. Arunchayanon
-// Last modified:   23.4.2019
-//*****************************************************************************
+
+
 
 #include <stdint.h>
 
-
-
-// *******************************************************
-// getYaw:          Uses the current slot number on the disk to
-//                  return an angle in degrees from the original reference point.
-// RETURNS:         Angle value between -180 < Yaw < 180 degrees.
-void
-getYaw(void);
 
 
 // *******************************************************
@@ -46,8 +31,8 @@ YawIntHandler (void);
 void
 initYaw (void);
 
-void
-yawTask (void);
+int32_t get_actual_degrees(void);
+
 
 extern uint32_t inityawTask(void);
 

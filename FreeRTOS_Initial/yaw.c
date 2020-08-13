@@ -11,13 +11,10 @@ typedef enum {STATE1 = 0, STATE2 = 2, STATE3 = 3, STATE4 = 1} yawStates_t ;  // 
 yawStates_t previous_yaw_State = STATE1; //set to correct state during initialization
 yawStates_t current_yaw_state = STATE1;
 
-
 int32_t current_slot_count = 0;
 int32_t mapped_slot_count = 0; //stays within 448 to -448
 int32_t actual_degrees = 0;
 int32_t mapped_degrees = 0; // stays within 360 to -360
-
-
 
 // *******************************************************
 // getYaw:          Uses the current slot number on the disk to
@@ -152,6 +149,40 @@ void initYaw (void) {
     GPIOIntRegister(GPIO_PORTB_BASE, YawIntHandler); //If interrupt occurs, run YawIntHandler
     IntEnable(INT_GPIOB); //Enable interrupts on B.
 }
+
+
+int32_t get_actual_degrees(void)
+{
+    return actual_degrees;
+}
+
+int32_t get_mapped_degress(void)
+{
+    return mapped_degrees;
+}
+
+int32_t get_current_slot_count(void)
+{
+    return current_slot_count;
+}
+
+int32_t get_mapped_slot_count(void)
+{
+    return mapped_slot_count;
+}
+
+void set_current_slot_count(int32_t set_count)
+{
+    current_slot_count = set_count;
+}
+
+void set_mapped_slot_count(int32_t set_count)
+{
+
+    mapped_slot_count = set_count;
+}
+
+
 
 void yawTask (void *pvparameters)
 {

@@ -1,3 +1,5 @@
+#ifndef ALTITUDE_H_
+#define ALTITUDE_H_
 
 
 
@@ -30,3 +32,5 @@ get_percentage(void);
 
 extern uint32_t initAltTask(void);
 extern uint32_t Altitude_calc(void);
+
+#endif /*ALTITUDE_H_*/
