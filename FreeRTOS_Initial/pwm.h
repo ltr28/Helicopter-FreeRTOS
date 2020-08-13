@@ -13,7 +13,7 @@
 
 
 // PWM configuration
-#define MAIN_FREQ  250
+#define MAIN_FREQ  200
 #define TAIL_FREQ  200
 
 #define MIN_MAIN_DUTY 10

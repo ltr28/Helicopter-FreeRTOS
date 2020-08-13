@@ -21,22 +21,6 @@ set_initial_value_of_slider_switch (void);
 void
 init_slider_switch_and_yaw_reference_pins (void);
 
-// controls what heli does in each flight mode and how it switches from one flight mode to the other
-void
-flight_modes_FSM (void);
-
-// return the current duty cycle for the tail motor
-int32_t
-get_yaw_duty (void);
-
-// return the current duty cycle for the main motor
-int32_t
-get_alt_duty (void);
-
-
-// char* get_current_flight_mode(void) returns the current_flight_mode in string for sending it over the uart
-char*
-get_current_flight_mode (void);
 
 extern uint32_t
 initControlTask (void);

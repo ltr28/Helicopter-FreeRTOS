@@ -13,17 +13,12 @@
    example which was given in PID 3 lecture notes of ENCE 361.
  */
 
-#include <stdint.h>
 #include "AllHeaderFiles.h"
 #include "altitude.h"
 #include "yaw.h"
 #include "pwm.h"
 #include "buttons4.h"
-
-int32_t current_slot_count = 0;
-int32_t mapped_slot_count = 0; //stays within 448 to -448
-int32_t actual_degrees = 0;
-int32_t mapped_degrees = 0; // stays within 360 to -360
+extern xSemaphoreHandle g_pUARTSemaphore;
 
 /* _alt - main_rotor
    KP_alt - Proportional gain for altitude
@@ -31,17 +26,15 @@ int32_t mapped_degrees = 0; // stays within 360 to -360
    KD_alt - Derivative gain for the altitude
  */
 #define KP_alt 0.5
-#define KI_alt 0.08
-#define KD_alt 0.6
+#define KI_alt 0.09
 
 /* _yaw - tail_rotor
     KP_yaw - Proportional gain for yaw
    KI_yaw - Integral gain for the yaw
    KD_yaw - Derivative gain for the yaw
  */
-#define KP_yaw 1.2
-#define KI_yaw 0.05
-#define KD_yaw 1.2
+#define KP_yaw 1
+#define KI_yaw 0.5
 
 #define YAW_REFERENCE_GPIO_BASE GPIO_PORTC_BASE
 #define SLIDER_SWITCH_GPIO_BASE GPIO_PORTA_BASE
@@ -56,11 +49,9 @@ bool first = false;
 
 const double delta_time = 0.01; // delta time is the same as the sampling time of the adc.
 double alt_error = 0;
-double alt_last_error = 0;
 double alt_integrated_error = 0;
 
 double yaw_error = 0;
-double yaw_last_error = 0;
 double yaw_integrated_error = 0;
 
 
@@ -86,7 +77,6 @@ set_initial_value_of_slider_switch (void)
  */
 void YawRefHandler(void)
 {
-    GPIOIntClear(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN); // clears the interrupt flag
     int yawref  =  GPIOPinRead(GPIO_PORTC_BASE, GPIO_PIN_4);
 
     if(first == false)
@@ -95,13 +85,9 @@ void YawRefHandler(void)
         {
             first = true;
         }
-
-        else
-        {
-
-        }
-
     }
+    GPIOIntClear(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN); // clears the interrupt flag
+
 }
 
 
@@ -123,9 +109,9 @@ void init_slider_switch_and_yaw_reference_pins(void)
                      GPIO_STRENGTH_4MA,
                      GPIO_PIN_TYPE_STD_WPU);
 
-    GPIOIntTypeSet(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN , GPIO_LOW_LEVEL); //Trigger interrupts on both edges of wave changes on PB0 and PB1
-    GPIOIntEnable(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN); //Enable interrupts from PB0 and PB1
-    GPIOIntRegister(YAW_REFERENCE_GPIO_BASE,YawRefHandler); //If interrupt occurs, run YawIntHandler
+    GPIOIntTypeSet(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN , GPIO_LOW_LEVEL);
+    GPIOIntEnable(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN);
+    GPIOIntRegister(YAW_REFERENCE_GPIO_BASE,YawRefHandler); //If interrupt occurs, run YawRefIntHandler
     IntEnable(INT_GPIOB); //Enable interrupts on B.
 
 
@@ -147,83 +133,55 @@ void init_slider_switch_and_yaw_reference_pins(void)
    double pid_alt_control_update(w,x,y,z) returns the duty cycle of the main motor to
    maintain the desired altitude based on pid.
  */
-double
+void
 pid_alt_control_update (double alt_proportional_gain,
                         double alt_integral_gain,
-                        double alt_derivative_gain,
                         double delta_t)
 {
-    double alt_derivative_error;
-    double alt_control; // duty cycle for main motor
+
 
     alt_error = set_alt_point - get_percentage(); // subtract the current altitude from the desired altitude
     alt_integrated_error += alt_error * delta_t;
-    alt_derivative_error = (alt_error - alt_last_error) / delta_t;
-    alt_control = alt_error * alt_proportional_gain
-            + alt_integrated_error * alt_integral_gain
-            + alt_derivative_error * alt_derivative_gain;
+    alt_duty = (alt_error * alt_proportional_gain)
+                    + (alt_integrated_error * alt_integral_gain);
 
-    if (alt_control < MIN_MAIN_DUTY)
+    if (alt_duty < MIN_MAIN_DUTY)
     {
-        alt_control = MIN_MAIN_DUTY;
+        alt_duty = MIN_MAIN_DUTY;
     }
 
-    if (alt_control > MAX_MAIN_DUTY)
+    if (alt_duty > MAX_MAIN_DUTY)
     {
-        alt_control = MAX_MAIN_DUTY;
+        alt_duty = MAX_MAIN_DUTY;
     }
-
-    alt_last_error = alt_error;
-    alt_duty = alt_control; // alt_duty is used for displaying the duty cycle of the main motor over uart. See void uart_display(void) - uart.c file
-    return alt_control;
 }
 
 /*
    double pid_yaw_control_update(w,x,y,z) returns the duty cycle of the tail motor to
    maintain the desired yaw based on pid.
  */
-double
+void
 pid_yaw_control_update (double yaw_proportional_gain,
                         double yaw_integral_gain,
-                        double yaw_derivative_gain,
                         double delta_t)
 {
 
-    double yaw_derivative_error;
-    double yaw_control; // duty cycle for tail motor
 
-    yaw_error = set_yaw_point - actual_degrees;
+    yaw_error = set_yaw_point - get_actual_degrees();
     yaw_integrated_error += yaw_error * delta_t;
-    yaw_derivative_error = (yaw_error - yaw_last_error) / delta_t;
-    yaw_control = yaw_error * yaw_proportional_gain
-            + yaw_integrated_error * yaw_integral_gain
-            + yaw_derivative_error * yaw_derivative_gain;
+    yaw_duty = (yaw_error * yaw_proportional_gain)
+                    + (yaw_integrated_error * yaw_integral_gain);
 
-    if(yaw_control < MIN_TAIL_DUTY)
+    if(yaw_duty < MIN_TAIL_DUTY)
     {
-        yaw_control = MIN_TAIL_DUTY;
+        yaw_duty = MIN_TAIL_DUTY;
     }
 
-    if(yaw_control > MAX_TAIL_DUTY)
+    if(yaw_duty > MAX_TAIL_DUTY)
     {
-        yaw_control = MAX_TAIL_DUTY;
+        yaw_duty = MAX_TAIL_DUTY;
     }
 
-    yaw_last_error = yaw_error;
-    yaw_duty = yaw_control; // yaw_duty is used for displaying the duty cycle of the tail motor over uart. See void uart_display(void) - uart.c file
-    return yaw_control;
-}
-
-/*
-   void duty_cycle_based_on_pid (void) sets the duty cycle for the main motor and the tail motor based on pid update functions for  altitutde and yaw.
-   Called in case TAKEOFF:, case FLYING: and case LANDING: - void flight_modes_FSM (void)
- */
-void
-duty_cycle_based_on_pid (void)
-{
-
-    set_duty_cycle_for_main_and_tail_motor(pid_alt_control_update(KP_alt, KI_alt, KD_alt, delta_time),
-                                           pid_yaw_control_update(KP_yaw, KI_yaw, KD_yaw, delta_time));
 }
 
 
@@ -239,8 +197,12 @@ landing (void)
 {
     set_yaw_point = 0;
     mapped_set_yaw_point = 0;
-    duty_cycle_based_on_pid();
-    if(actual_degrees == 0)
+
+    pid_alt_control_update(KP_alt, KI_alt, delta_time);
+    pid_yaw_control_update(KP_yaw, KI_yaw, delta_time);
+    set_duty_cycle_for_main_and_tail_motor(alt_duty, yaw_duty);
+
+    if(get_actual_degrees == 0)
     {
         if(get_percentage() == set_alt_point)
         {
@@ -274,13 +236,20 @@ landing (void)
 void
 flight_modes_FSM (void)
 {
+    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+    UARTprintf("Yaw_duty = %d\n ", yaw_duty);
+    xSemaphoreGive(g_pUARTSemaphore);
+
     current_slider_switch_value = GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7); // Read slider switch
+
     if(initial_slider_switch_value == 128 && current_slider_switch_value == 0) /*If the initial value of the slider switch is high and the current value
                                                                                   of the slider switch is low - (the slider switch has been pushed down),
                                                                                   so set the initial value to low. Go to case LANDED:*/
     {
         initial_slider_switch_value = 0;
     }
+
+
 
     switch(current_fligt_mode)
     {
@@ -292,14 +261,16 @@ flight_modes_FSM (void)
        2.Heli goes to TAKE OFF mode once the yaw reference position is found
      */
     case ORIENTATION:
-        if(first == false)
+
+        if(first == true)
         {
-            set_duty_cycle_for_main_and_tail_motor(10,15);
+            current_fligt_mode = TAKEOFF;
+            resetYaw();
         }
 
-        else if(first == true)
+        else
         {
-            current_fligt_mode == TAKEOFF;
+            set_duty_cycle_for_main_and_tail_motor(20, 30);
         }
 
         break;
@@ -311,17 +282,11 @@ flight_modes_FSM (void)
          */
     case TAKEOFF:
         set_yaw_point = 0;
-        duty_cycle_based_on_pid();
-
-        if( actual_degrees == set_yaw_point)
-        {
-            if(get_percentage() == set_alt_point && set_alt_point < 50)
-            {
-                set_alt_point  += 10;
-            }
-        }
-
-        if(actual_degrees() == set_yaw_point && get_percentage() == 50)
+        set_alt_point = 0;
+        pid_alt_control_update(KP_alt, KI_alt, delta_time);
+        pid_yaw_control_update(KP_yaw, KI_yaw, delta_time);
+        set_duty_cycle_for_main_and_tail_motor(alt_duty, yaw_duty);
+        if(get_actual_degrees() == set_yaw_point && get_percentage() == 0)
         {
             current_fligt_mode  = FLYING;
         }
@@ -334,13 +299,14 @@ flight_modes_FSM (void)
          */
     case FLYING:
 
-        duty_cycle_based_on_pid();
-        get_percentage();
+        pid_alt_control_update(KP_alt, KI_alt, delta_time);
+        pid_yaw_control_update(KP_yaw, KI_yaw, delta_time);
+        set_duty_cycle_for_main_and_tail_motor(alt_duty, yaw_duty);
 
 
         if(current_slider_switch_value == 0)
         {
-            current_slot_count = mapped_slot_count; /*
+            set_current_slot_count(get_mapped_slot_count()); /*
                                                                current_slot_count is set to mapped_slot_count which stays within 448 to -448. So the
                                                                actual degrees are set within 360 to -360. This is done so that the heli doesn't
                                                                rotate million times to come back to zero degrees because of pid.*/
@@ -365,15 +331,17 @@ flight_modes_FSM (void)
          */
     case LANDED:
         set_duty_cycle_for_main_and_tail_motor(0,0);
+
         alt_error = 0;
-        alt_last_error = 0;
         alt_integrated_error = 0;
+
         yaw_error = 0;
-        yaw_last_error = 0;
         yaw_integrated_error = 0;
+
         set_yaw_point  = 0;
-        set_alt_point = 0;
         mapped_set_yaw_point = 0;
+        set_alt_point = 0;
+
 
         if(current_slider_switch_value == 128 && initial_slider_switch_value == 0) /*
                                                                                       The if statement prevents the heli from going into ORIENTATION mode
@@ -408,13 +376,14 @@ void control_task (void *pvparameters)
     while(1)
     {
         flight_modes_FSM();
+
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 }
 
 uint32_t initControlTask (void)
 {
-    if(xTaskCreate(control_task(), (const portCHAR *)"Control_heli", 2000, NULL,
+    if(xTaskCreate(control_task, (const portCHAR *)"Control_heli", 1024, NULL,
                    PRIORITY_CONTROL_TASK, NULL) != pdTRUE)
     {
         return(1);

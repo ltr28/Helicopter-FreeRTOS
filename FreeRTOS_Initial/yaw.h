@@ -7,6 +7,25 @@
 
 #include <stdint.h>
 
+int32_t get_actual_degrees(void);
+
+void
+set_current_slot_count(int32_t set_count);
+
+void
+set_mapped_slot_count(int32_t set_count);
+
+int32_t
+get_actual_degrees(void);
+
+int32_t
+get_mapped_degress(void);
+
+int32_t
+get_current_slot_count(void);
+
+int32_t
+get_mapped_slot_count(void);
 
 
 // *******************************************************
@@ -31,7 +50,7 @@ YawIntHandler (void);
 void
 initYaw (void);
 
-int32_t get_actual_degrees(void);
+
 
 
 extern uint32_t inityawTask(void);

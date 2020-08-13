@@ -18,6 +18,9 @@ init_pwm_clock (void)
 void
 init_pwm (void)
 {
+    SysCtlPeripheralEnable(PWM_MAIN_PERIPH_PWM);
+    SysCtlPeripheralEnable(PWM_TAIL_PERIPH_PWM);
+    SysCtlDelay(SysCtlClockGet()/12);
     GPIOPinConfigure(PWM_MAIN_GPIO_CONFIG);
     GPIOPinConfigure(PWM_TAIL_GPIO_CONFIG);
 

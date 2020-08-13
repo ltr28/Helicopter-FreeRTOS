@@ -87,14 +87,15 @@ int main(void)
     init_clock();
     init_pwm_clock ();
     initButtons();
+    init_slider_switch_and_yaw_reference_pins();
     initialiseUSB_UART();
     init_adc();
     initYaw();
     init_button_timer();
-    init_pwm ();
-    init_slider_switch_and_yaw_reference_pins();
-    turn_on_pwm_output();
     set_initial_value_of_slider_switch();
+    init_pwm ();
+    turn_on_pwm_output();
+
     IntMasterEnable();
 
 
@@ -129,7 +130,7 @@ int main(void)
 
     }
 
-    if(initControlTask != 0){
+    if(initControlTask() != 0){
         while(1)
         {
 
