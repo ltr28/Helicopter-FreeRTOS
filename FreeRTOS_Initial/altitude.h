@@ -7,6 +7,8 @@
 
 // Functions declarations //
 
+#include <stdint.h>
+
 //Initializes ADC at channel 9
 void
 init_adc (void);

@@ -88,10 +88,8 @@ void YawRefHandler(void)
             first = true;
         }
 
-        else()
-        {
+        else();
 
-        }
     }
 }
 
@@ -362,10 +360,9 @@ flight_modes_FSM (void)
         set_alt_point = 0;
         mapped_set_yaw_point = 0;
 
-        if(current_slider_switch_value == 128 && get_initial_value_of_slider_switch() == 0) /*
+        if(current_slider_switch_value == 128 && initial_slider_switch_value == 0) /*
                                                                                       The if statement prevents the heli from going into ORIENTATION mode
-                                                                                      from landed mode if the slider switch is already pushed up at the start
-                                                                                      of the program.
+                                                                                      from landed mode if the slider switch is already pushed up at the start                                                                                      of the program.
          */
         {
             if(first == false)
@@ -388,3 +385,16 @@ flight_modes_FSM (void)
     }
 }
 
+void yawTask (void *pvparameters)
+{
+    TickType_t xTime;
+    xTime = xTaskGetTickCount();
+
+    while(1)
+    {
+        flight_modes_FSM();
+        vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
+    }
+}
+
+uint16_t init

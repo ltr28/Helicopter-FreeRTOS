@@ -3,7 +3,6 @@
 
 
 
-
 #define degrees_in_circle 360
 #define slots_in_rig_circle 448 //slots in rig circle*4 = 112*4  = 448. Because 4 interrupts generated per pulse
 extern xSemaphoreHandle g_pUARTSemaphore;

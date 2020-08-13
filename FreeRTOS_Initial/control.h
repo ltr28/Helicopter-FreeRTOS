@@ -8,6 +8,8 @@
 #ifndef _CONTROL_H_
 #define _CONTROL_H_
 
+#include <stdint.h>
+
 
 // Functions declarations
 

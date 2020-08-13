@@ -12,8 +12,7 @@
 //*****************************************************************************
 
 
-#include "AllHeaderFiles.h"
-#include "altitude.h"
+#include <stdint.h>
 
 #define DISPTASKSTACKSIZE        128         // Stack size in words
 #define DISP_ITEM_SIZE           sizeof(uint32_t)

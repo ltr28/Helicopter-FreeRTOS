@@ -8,6 +8,8 @@
 #ifndef PWM_H_
 #define PWM_H_
 
+#include <stdint.h>
+
 
 
 // PWM configuration

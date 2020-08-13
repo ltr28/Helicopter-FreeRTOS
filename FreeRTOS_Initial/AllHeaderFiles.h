@@ -1,6 +1,12 @@
+/*
+ * AllHeaderFiles.h
+ *
+ *  Created on: 13/08/2020
+ *      Author: ach227
+ */
+
 #ifndef ALLHEADERFILES_H_
 #define ALLHEADERFILES_H_
-
 
 // By:  Texas Instruments
 #include <stdint.h>
@@ -40,4 +46,6 @@
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
 
 
-#endif /*ALLHEADERFILES_H_*/
+
+
+#endif /* ALLHEADERFILES_H_ */

@@ -9,9 +9,8 @@
 // 
 // *******************************************************
 
-#include <stdint.h>
-#include "stdlib.h"
-#include "circBufT.h"
+#include <circBufT.h>
+#include <stdlib.h>
 
 // *******************************************************
 // initCircBuf: Initialise the circBuf instance. Reset both indices to

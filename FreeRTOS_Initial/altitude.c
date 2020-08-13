@@ -23,6 +23,7 @@
 #include "AllHeaderFiles.h"
 #include "circBufT.h"
 
+
 extern xSemaphoreHandle g_pUARTSemaphore;
 BaseType_t xHigherPriorityTaskWoken;
 
