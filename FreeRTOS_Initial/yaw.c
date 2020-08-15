@@ -24,8 +24,7 @@ void calculate_degrees(void)
 {
     if((mapped_slot_count >= slots_in_rig_circle) || (mapped_slot_count <= -slots_in_rig_circle)) /*
                                                                                                      if mapped slot count goes beyond
-                                                                                                     448 or -448 set it back to 0.
-     */
+                                                                                                     448 or -448 set it back to 0.*/
 
     {
         mapped_slot_count= 0;
@@ -194,7 +193,6 @@ void yawTask (void *pvparameters)
     {
         //GPIOIntRegister(GPIO_PORTB_BASE, YawIntHandler); //If interrupt occurs, run YawIntHandler
         calculate_degrees();
-
         xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
         UARTprintf("%d\n ", mapped_degrees);
         xSemaphoreGive(g_pUARTSemaphore);

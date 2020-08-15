@@ -31,14 +31,16 @@ BaseType_t xHigherPriorityTaskWoken;
 #define BUF_SIZE 25
 #define ADC_QUEUE_ITEM_SIZE sizeof(uint32_t)
 
-static circBuf_t g_inBuffer; // Buffer of size BUF_SIZE integers (sample values)
-static uint16_t  landed_position = 2095;
+static uint16_t  landed_position = 0;
 static uint16_t  average = 0;
-static int8_t    percentage = 0;
+static uint16_t    percentage = 0;
+static uint16_t sum = 0;
+
 
 static const int16_t range = 993; // mean adc value at (0% altitude - 100% altitude) = 993 approximately
-
+bool init_landed_pos = false;
 uint32_t adcreceive  = 0;
+int8_t sum_counter = 0;
 
 
 
@@ -113,62 +115,8 @@ init_adc (void)
     // Enable interrupts for ADC0 sequence 3 (clears any outstanding interrupts)
     ADCIntEnable(ADC0_BASE, 3);
 
-    initCircBuf (&g_inBuffer, BUF_SIZE);
 }
 
-
-/*
-
-  Calculates the mean adc value when the helicopter is landed(0%). Calculated value is then used as a
-  reference to calculate the altitude of the helicopter.
-
- */
-void
-calculate_landed_position(void)
-{
-    uint32_t sum = 0;
-    uint16_t i;
-    uint16_t repeat_times;
-
-
-    //3 mean values are calculated by repeating the process 3 times to get
-    //the better mean value of the landed_position
-    for(repeat_times = 0; repeat_times < 3 ; repeat_times++)
-    {
-        // Background task: calculate the (approximate) mean of the values in the
-        // circular buffer
-        sum = 0;
-
-        for (i = 0; i < BUF_SIZE; i++)
-        {
-            sum = sum + readCircBuf (&g_inBuffer);
-        }
-        //Adding all the mean values
-        landed_position = landed_position + (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
-    }
-    // The sum of three mean values divided by 3 to get the average
-    landed_position = landed_position/repeat_times;
-}
-
-
-void
-calculate_mean_adc_and_percentage(void)
-{
-    uint32_t sum;
-    uint16_t i;
-
-    // Background task: calculate the (approximate) mean of the values in the
-    // circular buffer
-    sum = 0;
-
-    for (i = 0; i < BUF_SIZE; i++)
-    {
-        sum = sum + readCircBuf (&g_inBuffer);
-    }
-
-    average = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
-    percentage = (200*(landed_position - average) + range)/(2*range);
-}
 
 int8_t
 get_percentage(void)
@@ -182,16 +130,16 @@ void AdcTriggerTask(void *pvParameters)
     TickType_t xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
 
-//    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-//    UARTprintf("Adc Trigger task starting\n ");
-//    xSemaphoreGive(g_pUARTSemaphore);
+    //    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+    //    UARTprintf("Adc Trigger task starting\n ");
+    //    xSemaphoreGive(g_pUARTSemaphore);
 
 
     while(1)
     {
         ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
 
-        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10));
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(5));
     }
 }
 
@@ -202,34 +150,54 @@ void AdcreceiveTask(void *p)
 
     TickType_t xTime;
     xTime = xTaskGetTickCount();
-    uint16_t i;
-    uint32_t sum = 0;
     while (1)
     {
         adcreceive = 0;
+
         if(xQueueReceive(xADCQueue, &adcreceive, 0) == pdTRUE)
         {
-//            printf("receiving_nicely - ADC = %d\n", adcreceive);
+            if(sum_counter < BUF_SIZE)
+            {
+                sum = sum + adcreceive;
+                sum_counter++;
+            }
+
+            else if (sum_counter >= BUF_SIZE)
+            {
+                average = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
+                sum = 0;
+                sum_counter = 0;
+
+                if(init_landed_pos == false)
+                {
+                    landed_position = average;
+                    init_landed_pos = true;
+                }
+
+                else
+                {
+                    percentage = (200*(landed_position - average) + range)/(2*range);
+
+                }
+
+
+            }
+
+
         }
 
-        // Background task: calculate the (approximate) mean of the values in the
-        // circular buffer
-        sum = 0;
-        for (i = 0; i < BUF_SIZE; i++)
-        {
-            sum = sum + adcreceive;
-        }
-        average = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
-        percentage = (200*(landed_position - average) + range)/(2*range);
-        //printf("Altitude = %d \n", percentage);
+        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+        UARTprintf("Percentage = %d\n", percentage);
+        xSemaphoreGive(g_pUARTSemaphore);
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
-
     }
 
 }
 
+
+
 uint32_t
-initAltTask(void)
+AltTriggerTask(void)
 {
     xADCQueue = xQueueCreate( BUF_SIZE, ADC_QUEUE_ITEM_SIZE );
     if(xTaskCreate(AdcTriggerTask, (const portCHAR *)"Get Sample", ALTITUDETASKSTACKSIZE, NULL,
@@ -237,9 +205,7 @@ initAltTask(void)
     {
         return(1);
     }
-    //
-    // Success.
-    //
+
     return(0);
 
 }
