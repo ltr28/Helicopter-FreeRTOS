@@ -62,6 +62,21 @@ int32_t alt_duty = 0; // stores the duty cycle of the main rotor
 uint8_t current_slider_switch_value  = 0; // stores the current value of the slider switch
 uint8_t initial_slider_switch_value = 0; // stores the initial value of the slider switch when everything is initialized in int main(void)
 
+int8_t
+get_alt_ref(void)
+{
+    return set_alt_point;
+
+}
+
+int8_t
+get_yaw_ref(void)
+{
+    return set_yaw_point;
+
+}
+
+
 void
 set_initial_value_of_slider_switch (void)
 {

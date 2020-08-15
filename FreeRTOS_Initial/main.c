@@ -14,7 +14,7 @@
 #include "buttons4.h"
 #include "control.h"
 #include "pwm.h"
-
+#include "display.h"
 
 
 
@@ -83,7 +83,6 @@ int main(void)
     g_pUARTSemaphore = xSemaphoreCreateMutex();
     peripherals_reset (); // all the peripherals are reset
     pheripherals_enable (); // all the peripherals are enabled
-
     init_clock();
     init_pwm_clock ();
     initButtons();
@@ -95,6 +94,7 @@ int main(void)
     set_initial_value_of_slider_switch();
     init_pwm ();
     turn_on_pwm_output();
+    initDisplay();
 
     IntMasterEnable();
 
@@ -138,6 +138,13 @@ int main(void)
 
     }
 
+//    if(initDisplayTask() != 0) {
+//          while(1)
+//          {
+//
+//          }
+//
+//      }
 
 
     vTaskStartScheduler();
@@ -150,60 +157,5 @@ int main(void)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////
-
-////
-
-////
-//    if(initDisplayTask() != 0) {
-//          while(1)
-//          {
-//              //add blinking LED routine here
-//              //print to UART PWM Task not working
-//          }
-//
-//      }
 
 

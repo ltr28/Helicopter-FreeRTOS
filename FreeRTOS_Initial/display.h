@@ -14,7 +14,6 @@
 
 #include <stdint.h>
 
-#define DISPTASKSTACKSIZE        128         // Stack size in words
 #define DISP_ITEM_SIZE           sizeof(uint32_t)
 #define DISP_QUEUE_SIZE          5
 #define MAX_STR_LEN              100
@@ -58,6 +57,16 @@ OutputToDisplay (void);
 //                      duty cycles and the current mode
 void
 OutputToUART (void);
+
+
+static void
+DisplayTask(void *pvparameters);
+
+
+//  *****************************************************************************
+//  initDisplayTask:    Initialises the FreeRTOS Task displaying the helicopter altitude, height and references
+extern int32_t
+initDisplayTask(void);
 
 
 #endif /*DISPLAY_H_*/
