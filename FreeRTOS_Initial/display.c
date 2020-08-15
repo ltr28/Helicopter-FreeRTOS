@@ -83,9 +83,9 @@ void OutputToUART (void)
     if (slowTick)
     {
         slowTick = false;
-        //usprintf (statusStr, "YawRef=%2d Yaw=%2d | \r\n", GetYawRef(), getYaw()); // Form status message
+        usprintf (statusStr, "YawRef=%2d Yaw=%2d | \r\n", GetYawRef(), getYaw()); // Form status message
         UARTSend (statusStr); // Send to the console
-//        usprintf (statusStr, "AltRef=%2d Alt=%2d | \r\n", GetAltRef(), percentAltitude());
+        usprintf (statusStr, "AltRef=%2d Alt=%2d | \r\n", GetAltRef(), percentAltitude());
         UARTSend (statusStr);
         usprintf (statusStr, "MDut=%2d TDuty=%2d | \r\n", getMainDuty(), getTailDuty());
         UARTSend (statusStr);
@@ -96,11 +96,10 @@ void OutputToUART (void)
 
 static void DisplayTask(void *pvparameters)
 {
-    int32_t recValue = vReceiverTask(NULL);
-    if( recValue != -1) {
-        printString("Altitude = %4d%%", recValue, 0);
+    while (1) {
+        OutputToUART();
+        vTaskDelay(100);
     }
-    vTaskDelay(100);
 }
 
 int32_t initDisplayTask(void *pvparameters)

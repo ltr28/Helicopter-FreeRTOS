@@ -376,7 +376,6 @@ void control_task (void *pvparameters)
     while(1)
     {
         flight_modes_FSM();
-
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 }

@@ -204,15 +204,9 @@ void AdcreceiveTask(void *p)
     xTime = xTaskGetTickCount();
     uint16_t i;
     uint32_t sum = 0;
-
-
     while (1)
     {
         adcreceive = 0;
-
-
-
-
         if(xQueueReceive(xADCQueue, &adcreceive, 0) == pdTRUE)
         {
 //            printf("receiving_nicely - ADC = %d\n", adcreceive);
@@ -221,13 +215,10 @@ void AdcreceiveTask(void *p)
         // Background task: calculate the (approximate) mean of the values in the
         // circular buffer
         sum = 0;
-
         for (i = 0; i < BUF_SIZE; i++)
         {
             sum = sum + adcreceive;
         }
-
-
         average = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
         percentage = (200*(landed_position - average) + range)/(2*range);
         //printf("Altitude = %d \n", percentage);
@@ -236,9 +227,6 @@ void AdcreceiveTask(void *p)
     }
 
 }
-
-
-
 
 uint32_t
 initAltTask(void)

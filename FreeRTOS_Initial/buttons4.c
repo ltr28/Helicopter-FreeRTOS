@@ -171,46 +171,51 @@ checkButton (uint8_t butName)
 void
 setpoint_calculations (void)
 {
-    if ((checkButton (UP) == PUSHED))
-    {
-        set_alt_point += 10;
+    if(checkButton(LEFT) == PUSHED && checkButton(RIGHT) == PUSHED) {
+        set_yaw_point += 180;
+        mapped_set_yaw_point += 180;
+    }
+    else {
+        if (checkButton (UP) == PUSHED)
 
-        if(set_alt_point > 100) // if desired altitude is greater than or equal to 100% set it back to 100%.
         {
-            set_alt_point = 100;
+            set_alt_point += 10;
+
+            if(set_alt_point > 100) // if desired altitude is greater than or equal to 100% set it back to 100%.
+            {
+                set_alt_point = 100;
+            }
+        }
+
+        if (checkButton (DOWN) == PUSHED)
+        {
+            set_alt_point -= 10;
+
+            if (set_alt_point < 0) // if desired altitude is less than 30%(stable altitude) set it back to 30%.
+            {
+                set_alt_point = 0;
+            }
+        }
+
+        if (checkButton (LEFT) == PUSHED)
+        {
+            set_yaw_point -= 15;
+            mapped_set_yaw_point -= 15;
+        }
+
+        if (checkButton (RIGHT) == PUSHED)
+        {
+            set_yaw_point += 15;
+            mapped_set_yaw_point += 15;
         }
     }
 
-    if ((checkButton (DOWN) == PUSHED))
-    {
-        set_alt_point -= 10;
-
-        if (set_alt_point < 0) // if desired altitude is less than 30%(stable altitude) set it back to 30%.
-        {
-            set_alt_point  =  0;
-        }
-    }
-
-    if ((checkButton (LEFT) == PUSHED))
-    {
-        set_yaw_point -= 15;
-        mapped_set_yaw_point -= 15;
-    }
-
-    if ((checkButton (RIGHT) == PUSHED))
-    {
-        set_yaw_point += 15;
-        mapped_set_yaw_point += 15;
-    }
-
-    if(mapped_set_yaw_point >= 360 || mapped_set_yaw_point <= -360) /*
-                                                                      set the mapped yaw point back to zero if it goes beyond the range
-                                                                      of 360 to -360 for displaying purposes
-     */
-    {
+    if(mapped_set_yaw_point >= 360 || mapped_set_yaw_point <= -360) {
+    /*set the mapped yaw point back to zero if it goes beyond the range of 360 to -360 for displaying purposes*/
         mapped_set_yaw_point = 0;
     }
-//    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+
+    //    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
 ////    UARTprintf("                          " );
 ////    UARTprintf("Map_Yaw = %i\n",mapped_set_yaw_point);
 ////    UARTprintf("Alt = %i\n", set_alt_point );
@@ -227,6 +232,7 @@ ButTask(void *pvParameters){
     while(1)
     {
         setpoint_calculations();
+        //yawQueue()
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 }
