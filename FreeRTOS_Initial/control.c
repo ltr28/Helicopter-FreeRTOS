@@ -150,8 +150,7 @@ pid_alt_control_update (double alt_proportional_gain,
         alt_duty = MIN_MAIN_DUTY;
     }
 
-    if (alt_duty > MAX_MAIN_DUTY)
-    {
+    if (alt_duty > MAX_MAIN_DUTY) {
         alt_duty = MAX_MAIN_DUTY;
     }
 }
