@@ -102,6 +102,7 @@ void YawRefHandler(void)
         }
     }
     GPIOIntClear(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN); // clears the interrupt flag
+    //
 
 }
 

@@ -270,7 +270,7 @@ void vTimerCallback(TimerHandle_t xTimer)
 void init_button_timer(void)
 {
 
-    timer = xTimerCreate("Button_timmer", pdMS_TO_TICKS(5), pdTRUE, (void *) 0,
+    timer = xTimerCreate("Button_timer", pdMS_TO_TICKS(5), pdTRUE, (void *) 0,
                          vTimerCallback);
     if (timer == NULL)
     {

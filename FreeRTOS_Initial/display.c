@@ -50,6 +50,9 @@ void initButtonCheck (void) {
     SysCtlPeripheralReset (RIGHT_BUT_PERIPH);//setting the RIGHT button GPIO
 }
 
+
+//*****************************************************************************
+//  OutputToDisplay:       Prints data on the OLED Display. Used on the microcontroller
 void OutputToDisplay(void)
 {
     printString("ALT: %d", get_percentage(), 0);
@@ -72,7 +75,6 @@ static void DisplayTask(void *pvparameters)
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(100));
     }
 }
-
 
 //  *****************************************************************************
 //  initDisplayTask:    Initialises the FreeRTOS Task displaying the helicopter altitude, height and references

@@ -138,13 +138,13 @@ int main(void)
 
     }
 
-//    if(initDisplayTask() != 0) {
-//          while(1)
-//          {
-//
-//          }
-//
-//      }
+    if(initDisplayTask() != 0) {
+          while(1)
+          {
+
+          }
+
+      }
 
 
     vTaskStartScheduler();
