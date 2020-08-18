@@ -138,7 +138,14 @@ int main(void)
 
     }
 
-    if(initDisplayTask() != 0) {
+//    if(initDisplayTask() != 0) {
+//          while(1)
+//          {
+//
+//          }
+//
+//      }
+    if(initUARTTask() != 0) {
           while(1)
           {
 

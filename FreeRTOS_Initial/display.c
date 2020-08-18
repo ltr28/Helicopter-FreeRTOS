@@ -45,10 +45,10 @@ void printString(char* restrict line_format, int32_t contents, uint8_t line_numb
 //  OutputToDisplay:       Prints data on the OLED Display. Used on the microcontroller
 void OutputToDisplay(void)
 {
-    printString("ALT: %d", get_percentage(), 0);
-    printString("YAW: %d", get_actual_degrees(), 1);
-    printString("ALT REF: %d", get_alt_ref(), 2);
-    printString("YAW REF: %d", get_yaw_ref(), 3);
+    printString("ALT: %d", 0, 0);
+    printString("YAW: %d", 0, 1);
+    printString("ALT REF: %d", 0, 2);
+    printString("YAW REF: %d", 0, 3);
 }
 
 

@@ -67,18 +67,18 @@ UARTTask(void *pvparameters)
     while(1)
 
     {
-        UARTprintf("ALT: %d\n", get_percentage());
-        UARTprintf("YAW: %d\n", get_actual_degrees());
-        UARTprintf("ALT REF: %d\n", get_alt_ref());
-        UARTprintf("YAW REF: %d\n\n\n", get_yaw_ref());
+        UARTprintf("ALT: %d\n", 0);
+        UARTprintf("YAW: %d\n", 0);
+        UARTprintf("ALT REF: %d\n", 0);
+        UARTprintf("YAW REF: %d\n\n\n", 0);
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 }
 
 int32_t initUARTTask(void)
 {
-    if(xTaskCreate(UARTTask, (const portCHAR *)"UART", 200, NULL,
-                       PRIORITY_YAW_TASK, NULL) != pdTRUE)
+    if(xTaskCreate(UARTTask, (const portCHAR *)"UART", 100, NULL,
+                       PRIORITY_UART_TASK, NULL) != pdTRUE)
         {
             return(1); //Error occurred
         }

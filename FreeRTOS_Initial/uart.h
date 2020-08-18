@@ -36,5 +36,11 @@ initialiseUSB_UART (void);
 void
 UARTSend (char *pucBuffer);
 
+void
+yawTask (void *pvparameters);
+
+int32_t
+initUARTTask(void);
+
 
 #endif /* UART_H_ */

@@ -33,7 +33,7 @@ BaseType_t xHigherPriorityTaskWoken;
 
 static uint16_t  landed_position = 0;
 static uint16_t  average = 0;
-static uint16_t    percentage = 0;
+static int16_t    percentage = 0;
 static uint16_t sum = 0;
 
 
@@ -45,6 +45,12 @@ int8_t sum_counter = 0;
 
 
 QueueHandle_t xADCQueue;
+
+uint16_t get_percentage(void)
+{
+    return percentage;
+}
+
 
 /*
 
@@ -114,14 +120,6 @@ init_adc (void)
 
     // Enable interrupts for ADC0 sequence 3 (clears any outstanding interrupts)
     ADCIntEnable(ADC0_BASE, 3);
-
-}
-
-
-int8_t
-get_percentage(void)
-{
-    return percentage;
 
 }
 

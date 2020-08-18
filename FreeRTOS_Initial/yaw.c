@@ -58,7 +58,7 @@ void YawIntHandler (void) {
     // Sneaky datatype trick - safe because pins are number 1 and 0
     // eg:
     // pins = 0b 0000 0011  => (decimal) 3 => STATE3
-    current_yaw_state = GPIOPinRead(GPIO_PORTB_BASE,GPIO_PIN_1|GPIO_PIN_0);
+    current_yaw_state = (yawStates_t) GPIOPinRead(GPIO_PORTB_BASE,GPIO_PIN_1|GPIO_PIN_0);
 
     // Take 'yawState', the condition before the interrupt
     // and from there decide what to do because of 'current_yaw_state'
@@ -141,7 +141,7 @@ void initYaw (void) {
     GPIOPadConfigSet(GPIO_PORTB_BASE, GPIO_PIN_0|GPIO_PIN_1, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD);
 
     // Read the pins to get correct previous_yaw_State
-    previous_yaw_State = GPIOPinRead(GPIO_PORTB_BASE,GPIO_PIN_1|GPIO_PIN_0);
+    previous_yaw_State = (yawStates_t) GPIOPinRead(GPIO_PORTB_BASE,GPIO_PIN_1|GPIO_PIN_0);
 
     GPIOIntTypeSet(GPIO_PORTB_BASE, GPIO_PIN_0|GPIO_PIN_1, GPIO_BOTH_EDGES); //Trigger interrupts on both edges of wave changes on PB0 and PB1
     GPIOIntEnable(GPIO_PORTB_BASE, GPIO_INT_PIN_0 | GPIO_INT_PIN_1); //Enable interrupts from PB0 and PB1
