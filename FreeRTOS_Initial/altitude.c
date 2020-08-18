@@ -125,7 +125,7 @@ get_percentage(void)
 
 }
 
-void AdcTriggerTask(void *pvParameters)
+void ADCTriggerTask(void *pvParameters)
 {
     TickType_t xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
@@ -145,7 +145,7 @@ void AdcTriggerTask(void *pvParameters)
 
 
 
-void AdcreceiveTask(void *p)
+void ADCReceiveTask(void *p)
 {
 
     TickType_t xTime;
@@ -197,10 +197,10 @@ void AdcreceiveTask(void *p)
 
 
 uint32_t
-AltTriggerTask(void)
+initADCTriggerTask(void)
 {
     xADCQueue = xQueueCreate( BUF_SIZE, ADC_QUEUE_ITEM_SIZE );
-    if(xTaskCreate(AdcTriggerTask, (const portCHAR *)"Get Sample", ALTITUDETASKSTACKSIZE, NULL,
+    if(xTaskCreate(ADCTriggerTask, (const portCHAR *)"Get Sample", ALTITUDETASKSTACKSIZE, NULL,
                    tskIDLE_PRIORITY + PRIORITY_ALT_TASK, NULL) != pdTRUE)
     {
         return(1);
@@ -213,10 +213,10 @@ AltTriggerTask(void)
 
 
 uint32_t
-Altitude_calc(void)
+intADCReceiveTask(void)
 {
 
-    if(xTaskCreate(AdcreceiveTask, (const portCHAR *)"Altitude_Calc", 500, NULL,
+    if(xTaskCreate(ADCReceiveTask, (const portCHAR *)"Altitude_Calc", 500, NULL,
                    2, NULL) != pdTRUE)
     {
         return(1);

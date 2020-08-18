@@ -42,16 +42,6 @@ void printString(char* restrict line_format, int32_t contents, uint8_t line_numb
 
 
 //*****************************************************************************
-//  initButtonCheck:    Initialises left and up buttons on the micro-controller
-void initButtonCheck (void) {
-    SysCtlPeripheralReset (LEFT_BUT_PERIPH);//setting up the LEFT button GPIO
-    SysCtlPeripheralReset (UP_BUT_PERIPH);//setting the UP button GPIO
-    SysCtlPeripheralReset (DOWN_BUT_PERIPH);//setting the DOWN button GPIO
-    SysCtlPeripheralReset (RIGHT_BUT_PERIPH);//setting the RIGHT button GPIO
-}
-
-
-//*****************************************************************************
 //  OutputToDisplay:       Prints data on the OLED Display. Used on the microcontroller
 void OutputToDisplay(void)
 {
@@ -63,7 +53,7 @@ void OutputToDisplay(void)
 
 
 //  *****************************************************************************
-//  DisplayTask:    FreeRTOS Task displaying the helicopter altitude, height and references
+//  DisplayTask:    FreeRTOS Task displaying the helicopter altitude, height and references on the OLED Display
 static void DisplayTask(void *pvparameters)
 {
     TickType_t xTime;

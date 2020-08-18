@@ -43,7 +43,7 @@ extern xSemaphoreHandle g_pUARTSemaphore;
 
 
 typedef enum  {LANDED,ORIENTATION,TAKEOFF,FLYING,LANDING} flight_modes_t;
-flight_modes_t current_fligt_mode = LANDED;
+flight_modes_t current_flight_mode = LANDED;
 bool first = false;
 
 
@@ -235,7 +235,7 @@ landing (void)
                                                               go to landed mode.
      */
     {
-        current_fligt_mode  = LANDED;
+        current_flight_mode  = LANDED;
     }
 }
 
@@ -248,6 +248,8 @@ landing (void)
    4.Flying
    5.Landing
  */
+
+
 void
 flight_modes_FSM (void)
 {
@@ -266,7 +268,7 @@ flight_modes_FSM (void)
 
 
 
-    switch(current_fligt_mode)
+    switch(current_flight_mode)
     {
 
     /*
@@ -279,7 +281,7 @@ flight_modes_FSM (void)
 
         if(first == true)
         {
-            current_fligt_mode = TAKEOFF;
+            current_flight_mode = TAKEOFF;
             resetYaw();
         }
 
@@ -297,13 +299,13 @@ flight_modes_FSM (void)
          */
     case TAKEOFF:
         set_yaw_point = 0;
-        set_alt_point = 0;
+        set_alt_point = 20;
         pid_alt_control_update(KP_alt, KI_alt, delta_time);
         pid_yaw_control_update(KP_yaw, KI_yaw, delta_time);
         set_duty_cycle_for_main_and_tail_motor(alt_duty, yaw_duty);
         if(get_actual_degrees() == set_yaw_point && get_percentage() == 0)
         {
-            current_fligt_mode  = FLYING;
+            current_flight_mode  = FLYING;
         }
         break;
 
@@ -325,7 +327,7 @@ flight_modes_FSM (void)
                                                                current_slot_count is set to mapped_slot_count which stays within 448 to -448. So the
                                                                actual degrees are set within 360 to -360. This is done so that the heli doesn't
                                                                rotate million times to come back to zero degrees because of pid.*/
-            current_fligt_mode = LANDING;
+            current_flight_mode = LANDING;
         }
         break;
 
@@ -365,7 +367,7 @@ flight_modes_FSM (void)
         {
             if(first == false)
             {
-                current_fligt_mode = ORIENTATION; /*
+                current_flight_mode = ORIENTATION; /*
                                                      current_flight_mode goes into orientation if yawref == true,
                                                      which means the reference has not been found. Once the reference
                                                      is found yawref is set to false.
@@ -374,7 +376,7 @@ flight_modes_FSM (void)
 
             else
             {
-                current_fligt_mode = TAKEOFF; /*
+                current_flight_mode = TAKEOFF; /*
                                                 current_flight mode is set to take off mode if the yawref == false
                  */
             }

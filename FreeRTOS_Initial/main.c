@@ -94,12 +94,12 @@ int main(void)
     set_initial_value_of_slider_switch();
     init_pwm ();
     turn_on_pwm_output();
-    //initDisplay();
+    initDisplay();
 
     IntMasterEnable();
 
 
-    if (AltTriggerTask() != 0)
+    if (initADCTriggerTask() != 0)
     {
         while(1)
         {
@@ -107,44 +107,44 @@ int main(void)
         }
     }
 
-    if(Altitude_calc() != 0 )
+    if(intADCReceiveTask() != 0 )
     {
         while(1)
         {
 
         }
     }
-//
-//    if(inityawTask() != 0){
-//        while(1)
-//        {
-//
-//        }
-//    }
-//
-//    if(initButTask() != 0){
-//        while(1)
-//        {
-//
-//        }
-//
-//    }
-//
-//    if(initControlTask() != 0){
-//        while(1)
-//        {
-//
-//        }
-//
-//    }
-//
-//    if(initDisplayTask() != 0) {
-//          while(1)
-//          {
-//
-//          }
-//
-//      }
+
+    if(inityawTask() != 0){
+        while(1)
+        {
+
+        }
+    }
+
+    if(initButTask() != 0){
+        while(1)
+        {
+
+        }
+
+    }
+
+    if(initControlTask() != 0){
+        while(1)
+        {
+
+        }
+
+    }
+
+    if(initDisplayTask() != 0) {
+          while(1)
+          {
+
+          }
+
+      }
 
 
     vTaskStartScheduler();

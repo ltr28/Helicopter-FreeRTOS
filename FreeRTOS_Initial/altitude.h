@@ -30,7 +30,7 @@ get_percentage(void);
 
 
 
-extern uint32_t AltTriggerTask(void);
-extern uint32_t Altitude_calc(void);
+extern uint32_t initADCTriggerTask(void);
+extern uint32_t intADCReceiveTask(void);
 
 #endif /*ALTITUDE_H_*/

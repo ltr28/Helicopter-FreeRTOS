@@ -193,9 +193,11 @@ void yawTask (void *pvparameters)
     {
         //GPIOIntRegister(GPIO_PORTB_BASE, YawIntHandler); //If interrupt occurs, run YawIntHandler
         calculate_degrees();
+
         xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-        UARTprintf("%d\n ", mapped_degrees);
+        UARTprintf("Mapped Degrees: %d\n ", mapped_degrees);
         xSemaphoreGive(g_pUARTSemaphore);
+
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
 
 

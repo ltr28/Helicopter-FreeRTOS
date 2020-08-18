@@ -10,6 +10,9 @@
 
 #include <AllHeaderFiles.h>
 #include <uart.h>
+#include "altitude.h"
+#include "yaw.h"
+#include "control.h"
 
 
 //********************************************************
@@ -56,4 +59,32 @@ UARTSend (char *pucBuffer)
     }
 }
 
+void
+UARTTask(void *pvparameters)
+{
+    TickType_t xTime;
+    xTime = xTaskGetTickCount();
+    while(1)
+
+    {
+        UARTprintf("ALT: %d\n", get_percentage());
+        UARTprintf("YAW: %d\n", get_actual_degrees());
+        UARTprintf("ALT REF: %d\n", get_alt_ref());
+        UARTprintf("YAW REF: %d\n\n\n", get_yaw_ref());
+        vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
+    }
+}
+
+int32_t initUARTTask(void)
+{
+    if(xTaskCreate(UARTTask, (const portCHAR *)"UART", 200, NULL,
+                       PRIORITY_YAW_TASK, NULL) != pdTRUE)
+        {
+            return(1); //Error occurred
+        }
+        //
+        // Success.
+        //
+        return(0);
+}
 
