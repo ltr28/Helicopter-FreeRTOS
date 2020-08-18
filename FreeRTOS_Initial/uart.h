@@ -42,5 +42,7 @@ yawTask (void *pvparameters);
 int32_t
 initUARTTask(void);
 
+void
+UARTTask(void *pvparameters);
 
 #endif /* UART_H_ */

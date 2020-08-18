@@ -46,6 +46,7 @@
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
 
 
-
+//Object Oriented Includes
+#include <data_control.h>
 
 #endif /* ALLHEADERFILES_H_ */

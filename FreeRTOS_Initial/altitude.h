@@ -13,7 +13,7 @@
 
 //Initializes ADC at channel 9
 void
-init_adc (void);
+initADC (void);
 
 //Calculates the mean adc value of the heli altitude position and sets it to (0%). Runs at the start of the program.
 void

@@ -12,8 +12,14 @@
 #include <uart.h>
 #include "altitude.h"
 #include "yaw.h"
+#include "pid.h"
 #include "control.h"
 
+extern PID_t Alt_PID;
+extern PID_t Yaw_PID;
+
+extern xSemaphoreHandle g_pUARTSemaphore;
+extern OperatingData_t OperatingData;
 
 //********************************************************
 // initialiseUSB_UART - 8 bits, 1 stop bit, no parity
@@ -67,11 +73,37 @@ UARTTask(void *pvparameters)
     while(1)
 
     {
-        UARTprintf("ALT: %d\n", 0);
-        UARTprintf("YAW: %d\n", 0);
-        UARTprintf("ALT REF: %d\n", 0);
-        UARTprintf("YAW REF: %d\n\n\n", 0);
-        vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
+        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+        UARTprintf("\033[H\033[2JENCE461 HeliRig Emulator\n");
+        UARTprintf("\nMode: %d\n", (int) OperatingData.HeliMode);
+        UARTprintf("\nProperties:\n");
+        UARTprintf("ALT: %d\n", OperatingData.AltCurrent);
+        UARTprintf("YAW: %d\n", OperatingData.YawMapped);
+        UARTprintf("ALT REF: %d\n", OperatingData.AltRef);
+        UARTprintf("YAW REF: %d\n", OperatingData.YawRef);
+        UARTprintf("\nMotor Properties:\n");
+        UARTprintf("ALT DUTY: %d\n", OperatingData.AltDuty);
+        UARTprintf("YAW DUTY: %d\n", OperatingData.YawDuty);
+
+
+        UARTprintf("P: %d\n", (int) Alt_PID.p_error);
+        UARTprintf("I: %d\n", (int) Alt_PID.i_error);
+        UARTprintf("D: %d\n", (int) Alt_PID.d_error);
+        UARTprintf("Set: %d\n", (int) OperatingData.AltRef);
+        UARTprintf("Meas: %d\n", (int) Alt_PID.current);
+        UARTprintf("O: %d\n", (int) Alt_PID.output);
+
+        UARTprintf("P: %d\n", (int) Yaw_PID.p_error);
+        UARTprintf("I: %d\n", (int) Yaw_PID.i_error);
+        UARTprintf("D: %d\n", (int) Yaw_PID.d_error);
+        UARTprintf("Set: %d\n", (int) OperatingData.YawRef);
+        UARTprintf("Meas: %d\n", (int) Yaw_PID.current);
+        UARTprintf("O: %d\n", (int) Yaw_PID.output);
+
+
+
+        xSemaphoreGive(g_pUARTSemaphore);
+        vTaskDelayUntil(&xTime, pdMS_TO_TICKS(100));
     }
 }
 

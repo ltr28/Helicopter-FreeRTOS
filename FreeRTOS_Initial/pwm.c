@@ -76,10 +76,3 @@ set_tail_pwm(uint32_t ui32Duty)
     PWMPulseWidthSet(PWM_TAIL_BASE, PWM_TAIL_OUTNUM,
                      ui32Period * ui32Duty / 100);
 }
-
-void
-set_duty_cycle_for_main_and_tail_motor(uint32_t main_duty,uint32_t tail_duty)
-{
-    set_main_pwm(main_duty);
-    set_tail_pwm(tail_duty);
-}

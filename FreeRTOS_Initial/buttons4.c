@@ -15,25 +15,13 @@
 
 // *******************************************************
 
-#include <stdint.h>
-#include <stdbool.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/gpio.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/debug.h"
-#include "inc/tm4c123gh6pm.h"  // Board specific defines (for PF0)
-#include "utils/uartstdio.h"
-#include "driverlib/uart.h"
+#include "AllHeaderFiles.h"
 
-//FreeRTOS Includes
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-#include "queue.h"
-#include "priorities.h"
+#include "inc/tm4c123gh6pm.h"  // Board specific defines (for PF0)
 #include "buttons4.h"
-#include <timers.h>
+#include "yaw.h"
+#include "timers.h"
+#include "control.h"
 
 extern xSemaphoreHandle g_pUARTSemaphore;
 #define BUT_TASK_STACK_SIZE     200
@@ -50,11 +38,22 @@ bool button_flag;
 static TimerHandle_t timer;
 volatile int mode_180 = 0;
 int32_t set_alt_point = 0; // desired altitude
-int32_t set_yaw_point = 0; // desired yaw
+
 int32_t mapped_set_yaw_point = 0; // mapped_set_yaw_point stays within 360 to -360 unlike set_yaw_point. For display purposes.\
 
 int32_t current_press = 0;
 int32_t last_press = 0;
+
+
+// *******************************************************
+uint8_t slider_switch  = 0; // stores the current value of the slider switch
+uint8_t slider_switch_init = 0; // stores the initial value of the slider switch when everything is initialized in int main(void)
+
+
+#define SLIDER_SWITCH_GPIO_BASE GPIO_PORTA_BASE
+#define SLIDER_SWITCH_GPIO_PIN GPIO_PIN_7
+#define YAW_REFERENCE_GPIO_BASE GPIO_PORTC_BASE
+#define YAW_REFERENCE_GPIO_PIN GPIO_PIN_4
 
 // *******************************************************
 // initButtons: Initialise the variables associated with the set of buttons
@@ -104,6 +103,69 @@ void initButtons(void)
     }
 }
 
+
+
+
+
+
+
+
+
+/*
+   void init_slider_switch_and_yaw_reference_pins(void) initializes the slider switch and the yaw reference gpio pins as an input.
+   Configuration of the slider switch  - weak pull down
+   Configuration of the yaw_reference  - weak pull up
+ */
+void initSwitches(void)
+{
+    GPIODirModeSet(YAW_REFERENCE_GPIO_BASE,
+                   YAW_REFERENCE_GPIO_PIN,
+                   GPIO_DIR_MODE_IN);
+
+    GPIOPadConfigSet(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN,
+                     GPIO_STRENGTH_4MA,
+                     GPIO_PIN_TYPE_STD_WPU);
+
+    GPIOIntTypeSet(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN , GPIO_LOW_LEVEL);
+    GPIOIntEnable(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN);
+    GPIOIntRegister(YAW_REFERENCE_GPIO_BASE,YawRefHandler); //If interrupt occurs, run YawRefIntHandler
+    IntEnable(INT_GPIOB); //Enable interrupts on B.
+
+
+    GPIODirModeSet(SLIDER_SWITCH_GPIO_BASE,
+                   SLIDER_SWITCH_GPIO_PIN,
+                   GPIO_DIR_MODE_IN);
+
+
+    GPIOPadConfigSet(SLIDER_SWITCH_GPIO_BASE,
+                     SLIDER_SWITCH_GPIO_PIN,
+                     GPIO_STRENGTH_4MA,
+                     GPIO_PIN_TYPE_STD_WPD);
+}
+int8_t
+get_alt_ref(void)
+{
+    return set_alt_point;
+
+}
+uint8_t
+GetSliderSwitchInit (void)
+{
+    return slider_switch_init;
+}
+
+void
+initSliderSwitch (void)
+{
+    slider_switch_init =  GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
+}
+
+uint8_t
+SetSliderSwitch (void)
+{
+    slider_switch = GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
+    return slider_switch;
+}
 // *******************************************************
 // updateButtons: Function designed to be called regularly. It polls all
 // buttons once and updates variables associated with the buttons if
@@ -242,7 +304,7 @@ void setpoint_calculations(void)
     //    xSemaphoreGive(g_pUARTSemaphore);
 }
 
-void ButTask(void *pvParameters)
+void ButtonTask(void *pvParameters)
 {
 
     TickType_t xTime;
@@ -267,7 +329,7 @@ void vTimerCallback(TimerHandle_t xTimer)
 //    }
 }
 
-void init_button_timer(void)
+void initButtonTimer(void)
 {
 
     timer = xTimerCreate("Button_timer", pdMS_TO_TICKS(5), pdTRUE, (void *) 0,
@@ -293,10 +355,10 @@ void init_button_timer(void)
     }
 }
 
-uint32_t initButTask(void)
+uint32_t initButtonTask(void)
 {
     //Create the task
-    if (xTaskCreate(ButTask, (const portCHAR *) "BUT", BUT_TASK_STACK_SIZE, NULL,
+    if (xTaskCreate(ButtonTask, (const portCHAR *) "BUT", BUT_TASK_STACK_SIZE, NULL,
                     tskIDLE_PRIORITY + PRIORITY_BUT_TASK, NULL) != pdTRUE)
     {
         return (1);

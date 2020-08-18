@@ -18,225 +18,58 @@
 #include "yaw.h"
 #include "pwm.h"
 #include "buttons4.h"
+#include "pid.h"
+
 extern xSemaphoreHandle g_pUARTSemaphore;
+extern xSemaphoreHandle g_pDataSemaphore;
+extern OperatingData_t OperatingData;
 
-/* _alt - main_rotor
-   KP_alt - Proportional gain for altitude
-   KI_alt - Integral gain for the altitude
-   KD_alt - Derivative gain for the altitude
- */
-#define KP_alt 0.5
-#define KI_alt 0.09
+extern uint8_t slider_switch;
+extern uint8_t slider_switch_init;
 
-/* _yaw - tail_rotor
-    KP_yaw - Proportional gain for yaw
-   KI_yaw - Integral gain for the yaw
-   KD_yaw - Derivative gain for the yaw
- */
-#define KP_yaw 1
-#define KI_yaw 0.5
-
-#define YAW_REFERENCE_GPIO_BASE GPIO_PORTC_BASE
-#define SLIDER_SWITCH_GPIO_BASE GPIO_PORTA_BASE
-#define YAW_REFERENCE_GPIO_PIN GPIO_PIN_4
-#define SLIDER_SWITCH_GPIO_PIN GPIO_PIN_7
+PID_t Alt_PID;
+PID_t Yaw_PID;
 
 
-typedef enum  {LANDED,ORIENTATION,TAKEOFF,FLYING,LANDING} flight_modes_t;
-flight_modes_t current_flight_mode = LANDED;
-bool first = false;
-
-
-const double delta_time = 0.01; // delta time is the same as the sampling time of the adc.
-double alt_error = 0;
-double alt_integrated_error = 0;
-
-double yaw_error = 0;
-double yaw_integrated_error = 0;
-
-
-int32_t yaw_duty = 0; // stores the duty cycle of the tail rotor
-int32_t alt_duty = 0; // stores the duty cycle of the main rotor
-
-
-uint8_t current_slider_switch_value  = 0; // stores the current value of the slider switch
-uint8_t initial_slider_switch_value = 0; // stores the initial value of the slider switch when everything is initialized in int main(void)
-
-int8_t
-get_alt_ref(void)
+OperatingData_t OperatingData_init (void)
 {
-    return set_alt_point;
-
-}
-
-int8_t
-get_yaw_ref(void)
-{
-    return set_yaw_point;
-
+    OperatingData_t OperatingData;
+    OperatingData.HelicopterOrientated = false;
+    OperatingData.AltRef = 0;
+    OperatingData.YawRef = 0;
+    OperatingData.YawMapped = 0;
+    OperatingData.HeliMode = LANDED;
+    OperatingData.AltDuty = 20;
+    OperatingData.YawDuty = 50;
+    return (OperatingData_t) OperatingData;
 }
 
 
-void
-set_initial_value_of_slider_switch (void)
-{
-    initial_slider_switch_value =  GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
-}
 
 
-/*
-   void find_yaw_ref(void) finds the reference yaw position. This is simply achieved by rotating the
-   helicopter at a constant duty cycle for the tail and main motors and checking if the
-   reference signal has gone low (Active low configuration). If the signal goes low  the current degrees is set to zero.
-   Called in case ORIENTATION: - void flight_modes_FSM (void).
- */
+
 void YawRefHandler(void)
 {
-    int yawref  =  GPIOPinRead(GPIO_PORTC_BASE, GPIO_PIN_4);
+    OperatingData.YawCurrent  =  GPIOPinRead(GPIO_PORTC_BASE, GPIO_PIN_4);
 
-    if(first == false)
+    if(OperatingData.HelicopterOrientated == false)
     {
-        if (yawref == 0)
+        if (OperatingData.YawRef == 0)
         {
-            first = true;
+            OperatingData.HelicopterOrientated = true;
         }
     }
     GPIOIntClear(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN); // clears the interrupt flag
     //
-
 }
 
-
-
-/*
-   void init_slider_switch_and_yaw_reference_pins(void) initializes the slider switch and the yaw reference gpio pins as an input.
-   Configuration of the slider switch  - weak pull down
-   Configuration of the yaw_reference  - weak pull up
- */
-void init_slider_switch_and_yaw_reference_pins(void)
-{
-
-
-    GPIODirModeSet(YAW_REFERENCE_GPIO_BASE,
-                   YAW_REFERENCE_GPIO_PIN,
-                   GPIO_DIR_MODE_IN);
-
-    GPIOPadConfigSet(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN,
-                     GPIO_STRENGTH_4MA,
-                     GPIO_PIN_TYPE_STD_WPU);
-
-    GPIOIntTypeSet(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN , GPIO_LOW_LEVEL);
-    GPIOIntEnable(YAW_REFERENCE_GPIO_BASE, YAW_REFERENCE_GPIO_PIN);
-    GPIOIntRegister(YAW_REFERENCE_GPIO_BASE,YawRefHandler); //If interrupt occurs, run YawRefIntHandler
-    IntEnable(INT_GPIOB); //Enable interrupts on B.
-
-
-    GPIODirModeSet(SLIDER_SWITCH_GPIO_BASE,
-                   SLIDER_SWITCH_GPIO_PIN,
-                   GPIO_DIR_MODE_IN);
-
-
-    GPIOPadConfigSet(SLIDER_SWITCH_GPIO_BASE,
-                     SLIDER_SWITCH_GPIO_PIN,
-                     GPIO_STRENGTH_4MA,
-                     GPIO_PIN_TYPE_STD_WPD);
-
-
-}
-
-
-/*
-   double pid_alt_control_update(w,x,y,z) returns the duty cycle of the main motor to
-   maintain the desired altitude based on pid.
- */
 void
-pid_alt_control_update (double alt_proportional_gain,
-                        double alt_integral_gain,
-                        double delta_t)
+SetDuty(uint32_t main_duty,uint32_t tail_duty)
 {
-
-
-    alt_error = set_alt_point - get_percentage(); // subtract the current altitude from the desired altitude
-    alt_integrated_error += alt_error * delta_t;
-    alt_duty = (alt_error * alt_proportional_gain)
-                    + (alt_integrated_error * alt_integral_gain);
-
-    if (alt_duty < MIN_MAIN_DUTY)
-    {
-        alt_duty = MIN_MAIN_DUTY;
-    }
-
-    if (alt_duty > MAX_MAIN_DUTY) {
-        alt_duty = MAX_MAIN_DUTY;
-    }
-}
-
-/*
-   double pid_yaw_control_update(w,x,y,z) returns the duty cycle of the tail motor to
-   maintain the desired yaw based on pid.
- */
-void
-pid_yaw_control_update (double yaw_proportional_gain,
-                        double yaw_integral_gain,
-                        double delta_t)
-{
-
-
-    yaw_error = set_yaw_point - get_actual_degrees();
-    yaw_integrated_error += yaw_error * delta_t;
-    yaw_duty = (yaw_error * yaw_proportional_gain)
-                    + (yaw_integrated_error * yaw_integral_gain);
-
-    if(yaw_duty < MIN_TAIL_DUTY)
-    {
-        yaw_duty = MIN_TAIL_DUTY;
-    }
-
-    if(yaw_duty > MAX_TAIL_DUTY)
-    {
-        yaw_duty = MAX_TAIL_DUTY;
-    }
-
-}
-
-
-/*
-   void landing (void) is being used for the smooth landing of the helicopter.
-   This function monitors that the altitude should drop by only 10%  if the helicopter is facing
-   the reference yaw position(0 degrees) and the current altitude is same as the desired altitude.
-   PID is used to control the duty cycle of both the tail and main motors.
-   Called in case LANDING: - void flight_modes_FSM (void).
- */
-void
-landing (void)
-{
-    set_yaw_point = 0;
-    mapped_set_yaw_point = 0;
-
-    pid_alt_control_update(KP_alt, KI_alt, delta_time);
-    pid_yaw_control_update(KP_yaw, KI_yaw, delta_time);
-    set_duty_cycle_for_main_and_tail_motor(alt_duty, yaw_duty);
-
-    if(get_actual_degrees == 0)
-    {
-        if(get_percentage() == set_alt_point)
-        {
-            set_alt_point -= 10;
-
-            if(set_alt_point < 0) // if the desired altitude goes below zero set it back to zero
-            {
-                set_alt_point = 0;
-            }
-        }
-    }
-
-    if(get_actual_degrees() == 0 && get_percentage() == 0) /*
-                                                              Once the current altitude and current degrees are equal to zero,
-                                                              go to landed mode.
-     */
-    {
-        current_flight_mode  = LANDED;
-    }
+    OperatingData.AltDuty = main_duty;
+    OperatingData.YawDuty = tail_duty;
+    set_main_pwm(main_duty);
+    set_tail_pwm(tail_duty);
 }
 
 /*
@@ -248,27 +81,20 @@ landing (void)
    4.Flying
    5.Landing
  */
-
-
-void
-flight_modes_FSM (void)
+void FlightFSM (void)
 {
-    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-    UARTprintf("Yaw_duty = %d\n ", yaw_duty);
-    xSemaphoreGive(g_pUARTSemaphore);
-
-    current_slider_switch_value = GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7); // Read slider switch
-
-    if(initial_slider_switch_value == 128 && current_slider_switch_value == 0) /*If the initial value of the slider switch is high and the current value
-                                                                                  of the slider switch is low - (the slider switch has been pushed down),
-                                                                                  so set the initial value to low. Go to case LANDED:*/
-    {
-        initial_slider_switch_value = 0;
+    slider_switch = SetSliderSwitch();
+    slider_switch_init = GetSliderSwitchInit();
+    if(slider_switch_init == 128 && slider_switch == 0) {
+        slider_switch_init = 0;
+    } else if (slider_switch_init == 0 && slider_switch == 0) {
+        OperatingData.HeliMode = LANDED;
     }
+    /*If the initial value of the slider switch is high and the current value
+                                                                                     of the slider switch is low - (the slider switch has been pushed down),
+                                                                                     so set the initial value to low. Go to case LANDED:*/
 
-
-
-    switch(current_flight_mode)
+    switch(OperatingData.HeliMode)
     {
 
     /*
@@ -278,16 +104,18 @@ flight_modes_FSM (void)
        2.Heli goes to TAKE OFF mode once the yaw reference position is found
      */
     case ORIENTATION:
-
-        if(first == true)
+        OperatingData.AltDuty = 20;
+        OperatingData.YawDuty = 50;
+        if(OperatingData.HelicopterOrientated == true)
         {
-            current_flight_mode = TAKEOFF;
             resetYaw();
+            OperatingData.HeliMode = TAKEOFF;
+
         }
 
         else
         {
-            set_duty_cycle_for_main_and_tail_motor(20, 30);
+            SetDuty(OperatingData.AltDuty, OperatingData.YawDuty);
         }
 
         break;
@@ -298,14 +126,15 @@ flight_modes_FSM (void)
        2.Goes to FLYING mode if the current altitude = 30% and the current degrees = 0.
          */
     case TAKEOFF:
-        set_yaw_point = 0;
-        set_alt_point = 20;
-        pid_alt_control_update(KP_alt, KI_alt, delta_time);
-        pid_yaw_control_update(KP_yaw, KI_yaw, delta_time);
-        set_duty_cycle_for_main_and_tail_motor(alt_duty, yaw_duty);
-        if(get_actual_degrees() == set_yaw_point && get_percentage() == 0)
+
+        OperatingData.YawRef = 0;
+        OperatingData.AltRef = 20;
+        Alt_PID = PIDUpdate(Alt_PID, OperatingData.AltCurrent, OperatingData.AltRef);
+        Yaw_PID = PIDUpdate(Yaw_PID, OperatingData.YawCurrent, OperatingData.YawRef);
+        SetDuty(Alt_PID.output, Yaw_PID.output);
+        if(OperatingData.YawCurrent == OperatingData.YawRef && OperatingData.AltCurrent == 0)
         {
-            current_flight_mode  = FLYING;
+            OperatingData.HeliMode  = FLYING;
         }
         break;
 
@@ -316,18 +145,19 @@ flight_modes_FSM (void)
          */
     case FLYING:
 
-        pid_alt_control_update(KP_alt, KI_alt, delta_time);
-        pid_yaw_control_update(KP_yaw, KI_yaw, delta_time);
-        set_duty_cycle_for_main_and_tail_motor(alt_duty, yaw_duty);
+        Alt_PID = PIDUpdate(Alt_PID, OperatingData.AltCurrent, OperatingData.AltRef);
+        Yaw_PID = PIDUpdate(Yaw_PID, OperatingData.YawCurrent, OperatingData.YawRef);
+        SetDuty(Alt_PID.output, Yaw_PID.output);
 
 
-        if(current_slider_switch_value == 0)
+        if(slider_switch == 0)
         {
-            set_current_slot_count(get_mapped_slot_count()); /*
-                                                               current_slot_count is set to mapped_slot_count which stays within 448 to -448. So the
-                                                               actual degrees are set within 360 to -360. This is done so that the heli doesn't
-                                                               rotate million times to come back to zero degrees because of pid.*/
-            current_flight_mode = LANDING;
+            set_current_slot_count(get_mapped_slot_count());
+            OperatingData.HeliMode = LANDING;
+/*
+           current_slot_count is set to mapped_slot_count which stays within 448 to -448. So the
+           actual degrees are set within 360 to -360. This is done so that the heli doesn't
+           rotate million times to come back to zero degrees because of pid.*/
         }
         break;
 
@@ -338,7 +168,40 @@ flight_modes_FSM (void)
         LANDED mode
          */
     case LANDING:
-        landing();
+    /*
+       void landing (void) is being used for the smooth landing of the helicopter.
+       This function monitors that the altitude should drop by only 10%  if the helicopter is facing
+       the reference yaw position(0 degrees) and the current altitude is same as the desired altitude.
+       PID is used to control the duty cycle of both the tail and main motors.
+       Called in case LANDING: - void flight_modes_FSM (void).
+     */
+        OperatingData.YawRef = 0;
+        OperatingData.YawMapped = 0;
+
+        Alt_PID = PIDUpdate(Alt_PID, OperatingData.AltCurrent, OperatingData.AltRef);
+        Yaw_PID = PIDUpdate(Yaw_PID, OperatingData.YawCurrent, OperatingData.YawRef);
+        SetDuty(Alt_PID.output, Yaw_PID.output);
+
+        if(OperatingData.AltCurrent == 0)
+        {
+            if(OperatingData.AltCurrent == OperatingData.AltRef)
+            {
+                OperatingData.AltRef -= 10;
+
+                if(OperatingData.AltRef < 0) // if the desired altitude goes below zero set it back to zero
+                {
+                    OperatingData.AltRef = 0;
+                }
+            }
+        }
+
+        if(OperatingData.YawCurrent == 0 && OperatingData.AltCurrent == 0) /*
+                                                                  Once the current altitude and current degrees are equal to zero,
+                                                                  go to landed mode.
+         */
+        {
+            OperatingData.HeliMode = LANDED;
+        }
         break;
 
         /*
@@ -347,59 +210,52 @@ flight_modes_FSM (void)
       2.Pushing the slider switch up will cause the helicopter to go either in Orientation mode or Take off mode.
          */
     case LANDED:
-        set_duty_cycle_for_main_and_tail_motor(0,0);
+        OperatingData.AltDuty = 0;
+        OperatingData.YawDuty = 0;
 
-        alt_error = 0;
-        alt_integrated_error = 0;
+        SetDuty(OperatingData.AltDuty, OperatingData.YawDuty);
+        Alt_PID = PIDReset(Alt_PID);
+        Yaw_PID = PIDReset(Yaw_PID);
 
-        yaw_error = 0;
-        yaw_integrated_error = 0;
+        OperatingData.YawRef = 0;
+        OperatingData.AltRef = 0;
 
-        set_yaw_point  = 0;
-        mapped_set_yaw_point = 0;
-        set_alt_point = 0;
-
-
-        if(current_slider_switch_value == 128 && initial_slider_switch_value == 0) /*
-                                                                                      The if statement prevents the heli from going into ORIENTATION mode
-                                                                                      from landed mode if the slider switch is already pushed up at the start                                                                                      of the program.
-         */
-        {
-            if(first == false)
-            {
-                current_flight_mode = ORIENTATION; /*
-                                                     current_flight_mode goes into orientation if yawref == true,
-                                                     which means the reference has not been found. Once the reference
-                                                     is found yawref is set to false.
-                 */
-            }
-
-            else
-            {
-                current_flight_mode = TAKEOFF; /*
-                                                current_flight mode is set to take off mode if the yawref == false
-                 */
+        if(slider_switch == 128 && slider_switch_init == 0) {
+          //The if statement prevents the heli from going into ORIENTATION mode
+          //from landed mode if the slider switch is already pushed up at the start of the program.
+            if(OperatingData.HelicopterOrientated == false) {
+                OperatingData.HeliMode = ORIENTATION;
+                // Current_flight_mode goes into orientation
+                // Reference has not been found
+                //Once the reference is found yawref is set to false.
+            } else {
+                OperatingData.HeliMode = TAKEOFF;
+                //current_flight mode is set to take off mode
             }
         }
         break;
     }
 }
 
-void control_task (void *pvparameters)
+void ControlTask (void *pvparameters)
 {
     TickType_t xTime;
     xTime = xTaskGetTickCount();
 
     while(1)
     {
-        flight_modes_FSM();
+        xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
+        FlightFSM();
+        xSemaphoreGive(g_pDataSemaphore);
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 }
 
 uint32_t initControlTask (void)
 {
-    if(xTaskCreate(control_task, (const portCHAR *)"Control_heli", 1024, NULL,
+    Alt_PID = pid_alt_init();
+    Yaw_PID = pid_yaw_init();
+    if(xTaskCreate(ControlTask, (const portCHAR *)"Control_heli", 128, NULL,
                    PRIORITY_CONTROL_TASK, NULL) != pdTRUE)
     {
         return(1);

@@ -17,12 +17,13 @@
 #include "display.h"
 
 
-
 // The mutex that protects concurrent access of UART from multiple tasks.
 //
 //*****************************************************************************
 xSemaphoreHandle g_pUARTSemaphore;
-
+xSemaphoreHandle g_pDataSemaphore;
+xSemaphoreHandle g_pADCSemaphore;
+OperatingData_t OperatingData;
 
 //*****************************************************************************
 //
@@ -81,17 +82,20 @@ void pheripherals_enable(void)
 int main(void)
 {
     g_pUARTSemaphore = xSemaphoreCreateMutex();
+    g_pDataSemaphore = xSemaphoreCreateMutex();
+    OperatingData = OperatingData_init();
+
     peripherals_reset (); // all the peripherals are reset
     pheripherals_enable (); // all the peripherals are enabled
     init_clock();
     init_pwm_clock ();
     initButtons();
-    init_slider_switch_and_yaw_reference_pins();
+    initSwitches();
     initialiseUSB_UART();
-    init_adc();
+    initADC();
     initYaw();
-    init_button_timer();
-    set_initial_value_of_slider_switch();
+    initButtonTimer();
+    initSliderSwitch();
     init_pwm ();
     turn_on_pwm_output();
     initDisplay();
@@ -122,7 +126,7 @@ int main(void)
         }
     }
 
-    if(initButTask() != 0){
+    if(initButtonTask() != 0){
         while(1)
         {
 

@@ -1,13 +1,17 @@
 
 #include "AllHeaderFiles.h"
-
-
+#include "buttons4.h"
 
 #define degrees_in_circle 360
 #define slots_in_rig_circle 448 //slots in rig circle*4 = 112*4  = 448. Because 4 interrupts generated per pulse
+
+
 extern xSemaphoreHandle g_pUARTSemaphore;
+extern xSemaphoreHandle g_pDataSemaphore;
+extern OperatingData_t OperatingData;
 
 typedef enum {STATE1 = 0, STATE2 = 2, STATE3 = 3, STATE4 = 1} yawStates_t ;  // 0b00 0b10 0b11 0b01
+
 yawStates_t previous_yaw_State = STATE1; //set to correct state during initialization
 yawStates_t current_yaw_state = STATE1;
 
@@ -15,6 +19,10 @@ int32_t current_slot_count = 0;
 int32_t mapped_slot_count = 0; //stays within 448 to -448
 int32_t actual_degrees = 0;
 int32_t mapped_degrees = 0; // stays within 360 to -360
+
+int32_t set_yaw_point = 0; // desired yaw
+
+
 
 // *******************************************************
 // getYaw:          Uses the current slot number on the disk to
@@ -34,7 +42,13 @@ void calculate_degrees(void)
     mapped_degrees = (2*mapped_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle; /*
                                                                                                                 mapped degrees stays within 360 to -360 for
                                                                                                                 displaying purposes
+
      */
+//    xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
+    OperatingData.YawCurrent = actual_degrees;
+    OperatingData.YawMapped = mapped_degrees;
+//    xSemaphoreGive(g_pDataSemaphore);
+
 }
 
 
@@ -181,6 +195,19 @@ void set_mapped_slot_count(int32_t set_count)
     mapped_slot_count = set_count;
 }
 
+int8_t
+get_yaw_ref(void)
+{
+    return set_yaw_point;
+}
+
+/*
+   void find_yaw_ref(void) finds the reference yaw position. This is simply achieved by rotating the
+   helicopter at a constant duty cycle for the tail and main motors and checking if the
+   reference signal has gone low (Active low configuration). If the signal goes low  the current degrees is set to zero.
+   Called in case ORIENTATION: - void flight_modes_FSM (void).
+ */
+
 
 
 void yawTask (void *pvparameters)
@@ -192,11 +219,19 @@ void yawTask (void *pvparameters)
 
     {
         //GPIOIntRegister(GPIO_PORTB_BASE, YawIntHandler); //If interrupt occurs, run YawIntHandler
-        calculate_degrees();
+        if((mapped_slot_count >= slots_in_rig_circle) || (mapped_slot_count <= -slots_in_rig_circle)) /*
+                                                                                                             if mapped slot count goes beyond
+                                                                                                             448 or -448 set it back to 0.*/
+            {
+                OperatingData.YawMapped = 0;
+            }
+        OperatingData.YawCurrent =  (2*current_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
+        OperatingData.YawMapped = (2*mapped_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
+        //Mapped degrees stays within 360 to -360 for displaying purposes
 
-        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-        UARTprintf("Mapped Degrees: %d\n ", mapped_degrees);
-        xSemaphoreGive(g_pUARTSemaphore);
+//        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+//        UARTprintf("Mapped Degrees: %d\n ", OperatingData.YawMapped);
+//        xSemaphoreGive(g_pUARTSemaphore);
 
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
 

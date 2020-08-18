@@ -48,6 +48,11 @@ enum butStates {RELEASED = 0, PUSHED, NO_CHANGE};
 
 #define NUM_BUT_POLLS 3
 
+#define SLIDER_SWITCH_GPIO_BASE GPIO_PORTA_BASE
+#define SLIDER_SWITCH_GPIO_PIN GPIO_PIN_7
+#define YAW_REFERENCE_GPIO_BASE GPIO_PORTC_BASE
+#define YAW_REFERENCE_GPIO_PIN GPIO_PIN_4
+
 extern int32_t set_alt_point; // desired altitude
 extern int32_t set_yaw_point; // desired yaw
 extern int32_t mapped_set_yaw_point; // mapped_set_yaw_point stays within 360 to -360 unlike set_yaw_point. For display purposes.
@@ -63,7 +68,8 @@ extern int32_t mapped_set_yaw_point; // mapped_set_yaw_point stays within 360 to
 void
 initButtons (void);
 
-
+void
+initSwitches(void);
 //// *******************************************************
 //// updateButtons:       Function designed to be called regularly. It polls all
 ////                      buttons once and updates variables associated with the buttons if
@@ -88,11 +94,21 @@ initButtons (void);
 ////                      necessary.  It is efficient enough to be part of an ISR, e.g. from
 ////                      a SysTick interrupt.
 
+int8_t
+get_alt_ref(void);
 
+uint8_t
+GetSliderSwitchInit (void);
+
+void
+initSliderSwitch (void);
+
+uint8_t
+SetSliderSwitch (void);
 
 uint32_t
-initButTask(void);
+initButtonTask(void);
 
-void init_button_timer(void);
+void initButtonTimer(void);
 
 #endif /*BUTTONS_H_*/

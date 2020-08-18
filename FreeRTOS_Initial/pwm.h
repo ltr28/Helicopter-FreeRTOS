@@ -65,8 +65,5 @@ init_pwm (void);
 void
 turn_on_pwm_output (void);
 
-// sets the duty cycle for the main and the tail motors
-void
-set_duty_cycle_for_main_and_tail_motor (uint32_t main_duty,uint32_t tail_duty);
 
 #endif /*PWM_H_*/

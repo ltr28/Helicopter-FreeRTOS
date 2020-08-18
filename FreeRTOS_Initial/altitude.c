@@ -22,8 +22,9 @@
 
 #include "AllHeaderFiles.h"
 #include "circBufT.h"
+#include "pid.h"
 
-
+extern OperatingData_t OperatingData;
 extern xSemaphoreHandle g_pUARTSemaphore;
 BaseType_t xHigherPriorityTaskWoken;
 
@@ -90,7 +91,7 @@ adc_int_handler(void)
 
  */
 void
-init_adc (void)
+initADC (void)
 {
     // The ADC0 peripheral must be enabled for configuration and use.
     SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
@@ -175,6 +176,7 @@ void ADCReceiveTask(void *p)
                 else
                 {
                     percentage = (200*(landed_position - average) + range)/(2*range);
+                    OperatingData.AltCurrent = percentage;
 
                 }
 
@@ -225,6 +227,3 @@ intADCReceiveTask(void)
     return(0);
 
 }
-
-
-

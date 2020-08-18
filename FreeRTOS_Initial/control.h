@@ -10,16 +10,22 @@
 
 #include <stdint.h>
 
+OperatingData_t
+OperatingData_init (void);
 
 // Functions declarations
-
-// sets the initial value for the slider switch in int main(void)
 void
-set_initial_value_of_slider_switch (void);
+YawRefHandler(void);
 
-// initializes the slider switch and the yaw reference gpio pins
+// sets the duty cycle for the main and the tail motors
 void
-init_slider_switch_and_yaw_reference_pins (void);
+SetDuty (uint32_t main_duty,uint32_t tail_duty);
+
+void
+FlightFSM (void);
+
+void
+ControlTask (void *pvparameters);
 
 
 extern uint32_t
