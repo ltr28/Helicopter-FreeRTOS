@@ -22,9 +22,10 @@
 #include "yaw.h"
 #include "timers.h"
 #include "control.h"
+#include "data_control.h"
 
 extern xSemaphoreHandle g_pUARTSemaphore;
-#define BUT_TASK_STACK_SIZE     200
+OperatingData_t OperatingData;
 
 // *******************************************************
 // Globals to module
@@ -142,12 +143,7 @@ void initSwitches(void)
                      GPIO_STRENGTH_4MA,
                      GPIO_PIN_TYPE_STD_WPD);
 }
-int8_t
-get_alt_ref(void)
-{
-    return set_alt_point;
 
-}
 uint8_t
 GetSliderSwitchInit (void)
 {
@@ -231,20 +227,20 @@ uint8_t checkButton(uint8_t butName)
  RIGHT button - desired yaw increases by 15 degrees
  */
 
-void setpoint_calculations(void)
+void UpdateReferences(void)
 {
     if (checkButton(UP) == PUSHED)
     {
         current_press = mode_180;
         if (current_press - last_press < 20) {
-            set_alt_point = 50;
+            OperatingData.AltRef = 50;
         }
         else{
-            set_alt_point += 10;
+            OperatingData.AltRef += 10;
 
-            if (set_alt_point > 100) // if desired altitude is greater than or equal to 100% set it back to 100%.
+            if (OperatingData.AltRef > 100) // if desired altitude is greater than or equal to 100% set it back to 100%.
             {
-                set_alt_point = 100;
+                OperatingData.AltRef = 100;
             }
         }
         last_press = current_press;
@@ -252,11 +248,11 @@ void setpoint_calculations(void)
 
     if (checkButton(DOWN) == PUSHED)
     {
-        set_alt_point -= 10;
+        OperatingData.AltRef -= 10;
 
-        if (set_alt_point < 0) // if desired altitude is less than 30%(stable altitude) set it back to 30%.
+        if (OperatingData.AltRef < 0) // if desired altitude is less than 30%(stable altitude) set it back to 30%.
         {
-            set_alt_point = 0;
+            OperatingData.AltRef = 0;
         }
     }
 
@@ -264,11 +260,11 @@ void setpoint_calculations(void)
     {
         current_press = mode_180;
         if(current_press - last_press < 20 ) {
-            set_yaw_point -= (180+15);
+            OperatingData.YawRef -= (180+15);
         }
         else{
-            set_yaw_point -= 15;
-            mapped_set_yaw_point -= 15;
+            OperatingData.YawRef -= 15;
+            OperatingData.YawRefMapped -= 15;
         }
         last_press = current_press;
     }
@@ -277,31 +273,20 @@ void setpoint_calculations(void)
     {
         current_press = mode_180;
         if(current_press - last_press < 20 ) {
-            set_yaw_point += (180-15);
+            OperatingData.YawRef += (180-15);
         }
         else{
-            set_yaw_point += 15;
-            mapped_set_yaw_point += 15;
+            OperatingData.YawRef += 15;
+            OperatingData.YawRefMapped += 15;
         }
         last_press = current_press;
     }
-
-    if (mapped_set_yaw_point >= 360 || mapped_set_yaw_point <= -360)
-    {
-        /*set the mapped yaw point back to zero if it goes beyond the range of 360 to -360 for displaying purposes*/
-        mapped_set_yaw_point = 0;
+    /*set the mapped yaw point back to zero if it goes beyond the range of 360 to -360 for displaying purposes*/
+    if (OperatingData.YawRefMapped >= 360) {
+        OperatingData.YawRefMapped -= 360;
+    } else if (OperatingData.YawRefMapped <= -360) {
+        OperatingData.YawRefMapped += 360;
     }
-
-    //send values through Queue here
-    //    xQueueSend(g_pAltQueue, &ulValue, &xHigherPriorityTaskWoken);
-    //    xQueueSend(g_pQueue)
-    //
-    //    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-    ////    UARTprintf("                          " );
-    ////    UARTprintf("Map_Yaw = %i\n",mapped_set_yaw_point);
-    ////    UARTprintf("Alt = %i\n", set_alt_point );
-    ////    UARTprintf("                          " );
-    //    xSemaphoreGive(g_pUARTSemaphore);
 }
 
 void ButtonTask(void *pvParameters)
@@ -312,8 +297,7 @@ void ButtonTask(void *pvParameters)
 
     while (1)
     {
-        setpoint_calculations();
-        //yawQueue()
+        UpdateReferences();
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 }
@@ -358,7 +342,7 @@ void initButtonTimer(void)
 uint32_t initButtonTask(void)
 {
     //Create the task
-    if (xTaskCreate(ButtonTask, (const portCHAR *) "BUT", BUT_TASK_STACK_SIZE, NULL,
+    if (xTaskCreate(ButtonTask, (const portCHAR *) "BUT", 100, NULL,
                     tskIDLE_PRIORITY + PRIORITY_BUT_TASK, NULL) != pdTRUE)
     {
         return (1);

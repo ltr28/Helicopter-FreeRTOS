@@ -13,8 +13,8 @@
    example which was given in PID 3 lecture notes of ENCE 361.
  */
 
+#include <altitude.h>
 #include "AllHeaderFiles.h"
-#include "altitude.h"
 #include "yaw.h"
 #include "pwm.h"
 #include "buttons4.h"
@@ -37,14 +37,15 @@ OperatingData_t OperatingData_init (void)
     OperatingData.HelicopterOrientated = false;
     OperatingData.AltRef = 0;
     OperatingData.YawRef = 0;
-    OperatingData.YawMapped = 0;
+    OperatingData.AltCurrent = 0;
+    OperatingData.YawCurrent = 0;
+    OperatingData.YawCurrentMapped = 0;
+    OperatingData.YawRefMapped = 0;
     OperatingData.HeliMode = LANDED;
     OperatingData.AltDuty = 20;
     OperatingData.YawDuty = 50;
     return (OperatingData_t) OperatingData;
 }
-
-
 
 
 
@@ -106,6 +107,8 @@ void FlightFSM (void)
     case ORIENTATION:
         OperatingData.AltDuty = 20;
         OperatingData.YawDuty = 50;
+        OperatingData.YawRef = 0;
+        OperatingData.AltRef = 20;
         if(OperatingData.HelicopterOrientated == true)
         {
             resetYaw();
@@ -126,17 +129,12 @@ void FlightFSM (void)
        2.Goes to FLYING mode if the current altitude = 30% and the current degrees = 0.
          */
     case TAKEOFF:
-
-        OperatingData.YawRef = 0;
-        OperatingData.AltRef = 20;
         Alt_PID = PIDUpdate(Alt_PID, OperatingData.AltCurrent, OperatingData.AltRef);
         Yaw_PID = PIDUpdate(Yaw_PID, OperatingData.YawCurrent, OperatingData.YawRef);
         SetDuty(Alt_PID.output, Yaw_PID.output);
-        if(OperatingData.YawCurrent == OperatingData.YawRef && OperatingData.AltCurrent == 0)
-        {
+        if((OperatingData.YawCurrent == OperatingData.YawRef) && (OperatingData.AltCurrent == 0)) {
             OperatingData.HeliMode  = FLYING;
-        }
-        break;
+        } break;
 
         /*
       In FLYING:
@@ -150,16 +148,14 @@ void FlightFSM (void)
         SetDuty(Alt_PID.output, Yaw_PID.output);
 
 
-        if(slider_switch == 0)
-        {
+        if(slider_switch == 0) {
             set_current_slot_count(get_mapped_slot_count());
             OperatingData.HeliMode = LANDING;
 /*
            current_slot_count is set to mapped_slot_count which stays within 448 to -448. So the
            actual degrees are set within 360 to -360. This is done so that the heli doesn't
            rotate million times to come back to zero degrees because of pid.*/
-        }
-        break;
+        } break;
 
         /*
       In LANDING:
@@ -176,7 +172,7 @@ void FlightFSM (void)
        Called in case LANDING: - void flight_modes_FSM (void).
      */
         OperatingData.YawRef = 0;
-        OperatingData.YawMapped = 0;
+        OperatingData.YawCurrentMapped = 0;
 
         Alt_PID = PIDUpdate(Alt_PID, OperatingData.AltCurrent, OperatingData.AltRef);
         Yaw_PID = PIDUpdate(Yaw_PID, OperatingData.YawCurrent, OperatingData.YawRef);
@@ -212,13 +208,14 @@ void FlightFSM (void)
     case LANDED:
         OperatingData.AltDuty = 0;
         OperatingData.YawDuty = 0;
-
-        SetDuty(OperatingData.AltDuty, OperatingData.YawDuty);
-        Alt_PID = PIDReset(Alt_PID);
-        Yaw_PID = PIDReset(Yaw_PID);
-
         OperatingData.YawRef = 0;
         OperatingData.AltRef = 0;
+        Alt_PID = PIDReset(Alt_PID);
+        Yaw_PID = PIDReset(Yaw_PID);
+        SetDuty(OperatingData.AltDuty, OperatingData.YawDuty);
+
+
+
 
         if(slider_switch == 128 && slider_switch_init == 0) {
           //The if statement prevents the heli from going into ORIENTATION mode
@@ -244,9 +241,7 @@ void ControlTask (void *pvparameters)
 
     while(1)
     {
-        xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
         FlightFSM();
-        xSemaphoreGive(g_pDataSemaphore);
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 }

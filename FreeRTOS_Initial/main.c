@@ -21,7 +21,6 @@
 //
 //*****************************************************************************
 xSemaphoreHandle g_pUARTSemaphore;
-xSemaphoreHandle g_pDataSemaphore;
 xSemaphoreHandle g_pADCSemaphore;
 OperatingData_t OperatingData;
 
@@ -82,7 +81,6 @@ void pheripherals_enable(void)
 int main(void)
 {
     g_pUARTSemaphore = xSemaphoreCreateMutex();
-    g_pDataSemaphore = xSemaphoreCreateMutex();
     OperatingData = OperatingData_init();
 
     peripherals_reset (); // all the peripherals are reset
@@ -99,9 +97,7 @@ int main(void)
     init_pwm ();
     turn_on_pwm_output();
     initDisplay();
-
     IntMasterEnable();
-
 
     if (initADCTriggerTask() != 0)
     {
@@ -142,13 +138,6 @@ int main(void)
 
     }
 
-//    if(initDisplayTask() != 0) {
-//          while(1)
-//          {
-//
-//          }
-//
-//      }
     if(initUARTTask() != 0) {
           while(1)
           {

@@ -23,57 +23,61 @@
 #include "AllHeaderFiles.h"
 #include "circBufT.h"
 #include "pid.h"
+#include "uart.h"
 
-extern OperatingData_t OperatingData;
-extern xSemaphoreHandle g_pUARTSemaphore;
+OperatingData_t OperatingData;
+xSemaphoreHandle g_pUARTSemaphore;
 BaseType_t xHigherPriorityTaskWoken;
 
-#define ALTITUDETASKSTACKSIZE       128      // Stack size in words
 #define BUF_SIZE 25
 #define ADC_QUEUE_ITEM_SIZE sizeof(uint32_t)
+#define RANGE_ALTITUDE  953
 
-static uint16_t  landed_position = 0;
-static uint16_t  average = 0;
-static int16_t    percentage = 0;
-static uint16_t sum = 0;
-
-
-static const int16_t range = 993; // mean adc value at (0% altitude - 100% altitude) = 993 approximately
-bool init_landed_pos = false;
-uint32_t adcreceive  = 0;
-int8_t sum_counter = 0;
-
-
+int32_t percentage;
+int32_t initial_position;
+bool init_land_alt = false;
 
 QueueHandle_t xADCQueue;
 
-uint16_t get_percentage(void)
-{
-    return percentage;
-}
-
-
 /*
-
   The handler for the ADC conversion complete interrupt.
   Writes to the circular buffer. Based on Week 4 lab ADCdemo1.c - void ADCIntHandler(void)
-
  */
 
-//
-//// Get the single sample from ADC0.  ADC_BASE is defined in
-//// inc/hw_memmap.h
-
-//
-//// Place it in the circular buffer (advancing write index)
-
-void
-adc_int_handler(void)
+int32_t computeAltitude (void)
 {
+    //initiate the sum to be 0 and the altitude value to be zero
+    int AltSum = 0;
+    int i = 0;
+    int32_t Altitude = 0;
+    //For the size of Altitude Queue increment over it and add all values
+    for(; i < BUF_SIZE; i++) {
+        xQueueReceive(xADCQueue, &Altitude, portMAX_DELAY);    //Receive the queue and add it to Altitude Buffer
+        AltSum = AltSum + Altitude;
+    }
+    return ((2 * AltSum + BUF_SIZE) / 2 / BUF_SIZE);    //returns an overall sum.
+}
 
+void resetAltitude(void)
+{
+    initial_position = computeAltitude();
+}
 
+int32_t percentAltitude(void)
+{
+     if (init_land_alt == false) {
+         resetAltitude();
+         init_land_alt = true;
+     }
+    int32_t current_position = computeAltitude();
+    return (2*100*(initial_position-current_position)+RANGE_ALTITUDE)/(2*RANGE_ALTITUDE);
+}
+
+//// Place it in the circular buffer (advancing write index)
+void
+ADCIntHandler(void)
+{
     xHigherPriorityTaskWoken = pdFALSE;
-
     uint32_t ulValue;
     ADCSequenceDataGet(ADC0_BASE, 3, &ulValue);
     xQueueSendFromISR(xADCQueue, &ulValue,  &xHigherPriorityTaskWoken);
@@ -85,10 +89,8 @@ adc_int_handler(void)
 }
 
 /*
-
   Intializes ADC_CHANNEL9(AIN9 - PE4 on tiva board)
   Based on Week 4 lab ADCdemo1.c - void initADC (void)
-
  */
 void
 initADC (void)
@@ -117,7 +119,7 @@ initADC (void)
     ADCSequenceEnable(ADC0_BASE, 3);
 
     // Register the interrupt handler
-    ADCIntRegister (ADC0_BASE, 3, adc_int_handler);
+    ADCIntRegister (ADC0_BASE, 3, ADCIntHandler);
 
     // Enable interrupts for ADC0 sequence 3 (clears any outstanding interrupts)
     ADCIntEnable(ADC0_BASE, 3);
@@ -129,15 +131,9 @@ void ADCTriggerTask(void *pvParameters)
     TickType_t xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
 
-    //    xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-    //    UARTprintf("Adc Trigger task starting\n ");
-    //    xSemaphoreGive(g_pUARTSemaphore);
-
-
     while(1)
     {
         ADCProcessorTrigger(ADC0_BASE, 3); // Initiate a conversion
-
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(5));
     }
 }
@@ -149,46 +145,12 @@ void ADCReceiveTask(void *p)
 
     TickType_t xTime;
     xTime = xTaskGetTickCount();
+
     while (1)
     {
-        adcreceive = 0;
 
-        if(xQueueReceive(xADCQueue, &adcreceive, 0) == pdTRUE)
-        {
-            if(sum_counter < BUF_SIZE)
-            {
-                sum = sum + adcreceive;
-                sum_counter++;
-            }
-
-            else if (sum_counter >= BUF_SIZE)
-            {
-                average = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
-                sum = 0;
-                sum_counter = 0;
-
-                if(init_landed_pos == false)
-                {
-                    landed_position = average;
-                    init_landed_pos = true;
-                }
-
-                else
-                {
-                    percentage = (200*(landed_position - average) + range)/(2*range);
-                    OperatingData.AltCurrent = percentage;
-
-                }
-
-
-            }
-
-
-        }
-
-        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-        UARTprintf("Percentage = %d\n", percentage);
-        xSemaphoreGive(g_pUARTSemaphore);
+        OperatingData.AltCurrent = percentAltitude();
+//        UARTprintf("ALT: %d\n", (int) percentage);
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 
@@ -200,7 +162,7 @@ uint32_t
 initADCTriggerTask(void)
 {
     xADCQueue = xQueueCreate( BUF_SIZE, ADC_QUEUE_ITEM_SIZE );
-    if(xTaskCreate(ADCTriggerTask, (const portCHAR *)"Get Sample", ALTITUDETASKSTACKSIZE, NULL,
+    if(xTaskCreate(ADCTriggerTask, (const portCHAR *)"Get Sample", 100, NULL,
                    tskIDLE_PRIORITY + PRIORITY_ALT_TASK, NULL) != pdTRUE)
     {
         return(1);
@@ -216,14 +178,11 @@ uint32_t
 intADCReceiveTask(void)
 {
 
-    if(xTaskCreate(ADCReceiveTask, (const portCHAR *)"Altitude_Calc", 500, NULL,
+    if(xTaskCreate(ADCReceiveTask, (const portCHAR *)"Altitude_Calc", 100, NULL,
                    2, NULL) != pdTRUE)
     {
         return(1);
     }
-    //
-    // Success.
-    //
     return(0);
 
 }

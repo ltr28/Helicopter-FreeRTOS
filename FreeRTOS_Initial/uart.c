@@ -8,9 +8,10 @@
 // Last modified:   16.4.2018
 //
 
+
 #include <AllHeaderFiles.h>
 #include <uart.h>
-#include "altitude.h"
+#include <altitude.h>
 #include "yaw.h"
 #include "pid.h"
 #include "control.h"
@@ -77,29 +78,13 @@ UARTTask(void *pvparameters)
         UARTprintf("\033[H\033[2JENCE461 HeliRig Emulator\n");
         UARTprintf("\nMode: %d\n", (int) OperatingData.HeliMode);
         UARTprintf("\nProperties:\n");
-        UARTprintf("ALT: %d\n", OperatingData.AltCurrent);
-        UARTprintf("YAW: %d\n", OperatingData.YawMapped);
-        UARTprintf("ALT REF: %d\n", OperatingData.AltRef);
-        UARTprintf("YAW REF: %d\n", OperatingData.YawRef);
+        UARTprintf("ALT: %d\n", (int) OperatingData.AltCurrent);
+        UARTprintf("YAW: %d\n", (int)OperatingData.YawCurrentMapped);
+        UARTprintf("ALT REF: %d\n", (int) OperatingData.AltRef);
+        UARTprintf("YAW REF: %d\n", (int) OperatingData.YawRefMapped);
         UARTprintf("\nMotor Properties:\n");
         UARTprintf("ALT DUTY: %d\n", OperatingData.AltDuty);
         UARTprintf("YAW DUTY: %d\n", OperatingData.YawDuty);
-
-
-        UARTprintf("P: %d\n", (int) Alt_PID.p_error);
-        UARTprintf("I: %d\n", (int) Alt_PID.i_error);
-        UARTprintf("D: %d\n", (int) Alt_PID.d_error);
-        UARTprintf("Set: %d\n", (int) OperatingData.AltRef);
-        UARTprintf("Meas: %d\n", (int) Alt_PID.current);
-        UARTprintf("O: %d\n", (int) Alt_PID.output);
-
-        UARTprintf("P: %d\n", (int) Yaw_PID.p_error);
-        UARTprintf("I: %d\n", (int) Yaw_PID.i_error);
-        UARTprintf("D: %d\n", (int) Yaw_PID.d_error);
-        UARTprintf("Set: %d\n", (int) OperatingData.YawRef);
-        UARTprintf("Meas: %d\n", (int) Yaw_PID.current);
-        UARTprintf("O: %d\n", (int) Yaw_PID.output);
-
 
 
         xSemaphoreGive(g_pUARTSemaphore);

@@ -17,10 +17,6 @@ yawStates_t current_yaw_state = STATE1;
 
 int32_t current_slot_count = 0;
 int32_t mapped_slot_count = 0; //stays within 448 to -448
-int32_t actual_degrees = 0;
-int32_t mapped_degrees = 0; // stays within 360 to -360
-
-int32_t set_yaw_point = 0; // desired yaw
 
 
 
@@ -38,25 +34,19 @@ void calculate_degrees(void)
         mapped_slot_count= 0;
     }
 
-    actual_degrees =  (2*current_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
-    mapped_degrees = (2*mapped_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle; /*
-                                                                                                                mapped degrees stays within 360 to -360 for
-                                                                                                                displaying purposes
-
+    OperatingData.YawCurrent =  (2*current_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
+    OperatingData.YawCurrentMapped = (2*mapped_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
+    /*  mapped degrees stays within 360 to -360 for
+        displaying purposes
      */
-//    xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
-    OperatingData.YawCurrent = actual_degrees;
-    OperatingData.YawMapped = mapped_degrees;
-//    xSemaphoreGive(g_pDataSemaphore);
-
 }
 
 
 // *******************************************************
 // resetYaw:        Resets the slot number to 0
 void resetYaw (void) {
-    mapped_slot_count = 0;
-    current_slot_count = 0;
+    OperatingData.YawCurrentMapped = 0;
+    OperatingData.YawCurrent = 0;
 }
 
 
@@ -163,17 +153,6 @@ void initYaw (void) {
     IntEnable(INT_GPIOB); //Enable interrupts on B.
 }
 
-
-int32_t get_actual_degrees(void)
-{
-    return actual_degrees;
-}
-
-int32_t get_mapped_degress(void)
-{
-    return mapped_degrees;
-}
-
 int32_t get_current_slot_count(void)
 {
     return current_slot_count;
@@ -193,12 +172,6 @@ void set_mapped_slot_count(int32_t set_count)
 {
 
     mapped_slot_count = set_count;
-}
-
-int8_t
-get_yaw_ref(void)
-{
-    return set_yaw_point;
 }
 
 /*
@@ -223,10 +196,10 @@ void yawTask (void *pvparameters)
                                                                                                              if mapped slot count goes beyond
                                                                                                              448 or -448 set it back to 0.*/
             {
-                OperatingData.YawMapped = 0;
+                OperatingData.YawCurrentMapped = 0;
             }
         OperatingData.YawCurrent =  (2*current_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
-        OperatingData.YawMapped = (2*mapped_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
+        OperatingData.YawCurrentMapped = (2*mapped_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
         //Mapped degrees stays within 360 to -360 for displaying purposes
 
 //        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);

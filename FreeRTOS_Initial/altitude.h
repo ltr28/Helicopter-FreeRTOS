@@ -11,6 +11,11 @@
 
 #include <stdint.h>
 
+int32_t
+computeAltitude (void);
+
+void
+resetAltitude (void);
 //Initializes ADC at channel 9
 void
 initADC (void);
@@ -23,10 +28,6 @@ calculate_landed_position(void);
 //Uses void calculate_landed_position(void) as a reference.
 void
 calculate_mean_adc_and_percentage(void);
-
-//return the current altitude of the heli
-int8_t
-get_percentage(void);
 
 
 

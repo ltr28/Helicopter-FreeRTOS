@@ -4,20 +4,20 @@
 #include <AllHeaderFiles.h>
 
 typedef struct PID_s_t {
-    int32_t k_p;
-    int32_t k_i;
-    int32_t k_d;
+    double k_p;
+    double k_i;
+    double k_d;
+    double delta_t;
 
-    int32_t p_error;
-    int32_t i_error;
-    int32_t d_error;
+    double p_error;
+    double i_error;
+    double d_error;
 
     int32_t max_out;
     int32_t min_out;
 
     int32_t current;
     int32_t previous;
-    int32_t delta_t;
     int32_t output;
 
 } PID_t;

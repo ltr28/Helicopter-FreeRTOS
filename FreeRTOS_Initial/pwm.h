@@ -65,5 +65,10 @@ init_pwm (void);
 void
 turn_on_pwm_output (void);
 
+void
+set_main_pwm (uint32_t ui32Duty);
+
+void
+set_tail_pwm(uint32_t ui32Duty);
 
 #endif /*PWM_H_*/

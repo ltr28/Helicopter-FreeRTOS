@@ -20,7 +20,7 @@
 #define KP_yaw 2
 #define KI_yaw 1
 #define KD_yaw 0
-#define INV_DELTA_T 10
+#define DELTA_T 0.01
 
 PID_t
 pid_alt_init(void)
@@ -39,7 +39,7 @@ pid_alt_init(void)
 
     Alt_PID.current = 0;
     Alt_PID.previous = 0;
-    Alt_PID.delta_t = INV_DELTA_T;
+    Alt_PID.delta_t = DELTA_T;
     Alt_PID.output = 0;
 
     return (Alt_PID);
@@ -62,7 +62,7 @@ pid_yaw_init(void)
 
     Yaw_PID.current = 0;
     Yaw_PID.previous = 0;
-    Yaw_PID.delta_t = INV_DELTA_T;
+    Yaw_PID.delta_t = DELTA_T;
     Yaw_PID.output = 0;
 
     return (Yaw_PID);
@@ -74,7 +74,7 @@ PIDUpdate (PID_t PID, int32_t current, int32_t set)
 {
     PID.current = current;
     PID.p_error = set - current;
-    PID.i_error += PID.p_error /PID.delta_t;
+    PID.i_error += PID.p_error * PID.delta_t;
     PID.d_error = (PID.current - PID.previous)*PID.delta_t;
     PID.output = (PID.p_error * PID.k_p) + (PID.i_error * PID.k_i) + (PID.d_error * PID.k_d);
     PID.previous = PID.current;

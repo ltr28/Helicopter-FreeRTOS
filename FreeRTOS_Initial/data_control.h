@@ -10,11 +10,13 @@ typedef struct OperatingData_s_t {
     int32_t AltRef;
     int32_t AltCurrent;
     int32_t YawRef;
-    int32_t YawMapped;
+    int32_t YawCurrentMapped;
+    int32_t YawRefMapped;
     int32_t YawCurrent;
     int32_t AltDuty;
     int32_t YawDuty;
     bool HelicopterOrientated;
+
 } OperatingData_t;
 
 
