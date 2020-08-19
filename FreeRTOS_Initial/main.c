@@ -20,6 +20,7 @@
 //*****************************************************************************
 // The mutex that protects concurrent access of UART from multiple tasks.
 xSemaphoreHandle g_pUARTSemaphore;
+xSemaphoreHandle g_pDataSemaphore;
 xSemaphoreHandle g_pADCSemaphore;
 
 OperatingData_t OperatingData;
@@ -78,6 +79,7 @@ void pheripherals_enable(void)
 int main(void)
 {
     g_pUARTSemaphore = xSemaphoreCreateMutex();
+    g_pDataSemaphore = xSemaphoreCreateMutex();
     OperatingData = OperatingData_init();
 
     peripherals_reset (); // all the peripherals are reset

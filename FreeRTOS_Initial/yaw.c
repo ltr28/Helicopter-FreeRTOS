@@ -1,9 +1,10 @@
 
 #include "AllHeaderFiles.h"
+#include "yaw.h"
 #include "buttons4.h"
 
-#define degrees_in_circle 360
-#define slots_in_rig_circle 448 //slots in rig circle*4 = 112*4  = 448. Because 4 interrupts generated per pulse
+#define TOTAL_DEGREES 360
+#define TOTAL_SLOTS 448 //slots in rig circle*4 = 112*4  = 448. Because 4 interrupts generated per pulse
 
 
 extern xSemaphoreHandle g_pUARTSemaphore;
@@ -12,11 +13,31 @@ extern OperatingData_t OperatingData;
 
 typedef enum {STATE1 = 0, STATE2 = 2, STATE3 = 3, STATE4 = 1} yawStates_t ;  // 0b00 0b10 0b11 0b01
 
+Slots_s slot_states;
+
+Slots_s Slots (void)
+{
+    Slots_s Slots;
+    Slots.current = 0; //Current Number of Slots
+    Slots.mapped = 0; //stays within 448 to -448
+    return (Slots);
+}
+
+void resetSlotState(void)
+{
+    slot_states.current = 0;
+    slot_states.mapped = 0;
+}
+
+void EqualiseCurrentSlots(void)
+{
+    slot_states.current = slot_states.mapped;
+}
+
 yawStates_t previous_yaw_State = STATE1; //set to correct state during initialization
 yawStates_t current_yaw_state = STATE1;
 
-int32_t current_slot_count = 0;
-int32_t mapped_slot_count = 0; //stays within 448 to -448
+
 
 
 
@@ -24,35 +45,26 @@ int32_t mapped_slot_count = 0; //stays within 448 to -448
 // getYaw:          Uses the current slot number on the disk to
 //                  return an angle in degrees from the original reference point.
 // RETURNS:         Angle value between -180 < Yaw < 180 degrees.
-void calculate_degrees(void)
+void CalculateYaw (void)
 {
-    if((mapped_slot_count >= slots_in_rig_circle) || (mapped_slot_count <= -slots_in_rig_circle)) /*
+    if((slot_states.mapped >= TOTAL_SLOTS) || (slot_states.mapped <= -TOTAL_SLOTS)) /*
                                                                                                      if mapped slot count goes beyond
                                                                                                      448 or -448 set it back to 0.*/
 
     {
-        mapped_slot_count= 0;
+        slot_states.mapped= 0;
     }
 
-    OperatingData.YawCurrent =  (2*current_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
-    OperatingData.YawCurrentMapped = (2*mapped_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
+    OperatingData.YawCurrent =  (2*slot_states.current*TOTAL_DEGREES + TOTAL_SLOTS) / 2 / TOTAL_SLOTS;
+    OperatingData.YawCurrentMapped = (2*slot_states.mapped*TOTAL_DEGREES + TOTAL_SLOTS) / 2 / TOTAL_SLOTS;
     /*  mapped degrees stays within 360 to -360 for
         displaying purposes
      */
 }
 
-
-// *******************************************************
-// resetYaw:        Resets the slot number to 0
-void resetYaw (void) {
-    mapped_slot_count = 0;
-    current_slot_count = 0;
-}
-
-
 // *******************************************************
 //  YawIntHandler:  Interrupt handler for the yaw interrupt.
-//                  Measures Phasse A and Phase B.
+//                  Measures Phase A and Phase B.
 //                  If moving clockwise, add 1 to slot
 //                  If moving anti-clockwise, minus 1 to slot
 void YawIntHandler (void) {
@@ -73,12 +85,12 @@ void YawIntHandler (void) {
         switch(current_yaw_state)
         {
         case STATE4:
-            current_slot_count--;
-            mapped_slot_count--;
+            slot_states.current--;
+            slot_states.mapped--;
             break;
         case STATE2:
-            current_slot_count++;
-            mapped_slot_count++;
+            slot_states.current++;
+            slot_states.mapped++;
             break;
         }
         break;
@@ -87,12 +99,12 @@ void YawIntHandler (void) {
             switch(current_yaw_state)
             {
             case STATE1:
-                current_slot_count--;
-                mapped_slot_count--;
+                slot_states.current--;
+                slot_states.mapped--;
                 break;
             case STATE3:
-                current_slot_count++;
-                mapped_slot_count++;
+                slot_states.current++;
+                slot_states.mapped++;
                 break;
             }
             break;
@@ -101,12 +113,12 @@ void YawIntHandler (void) {
                 switch(current_yaw_state)
                 {
                 case STATE2:
-                    current_slot_count--;
-                    mapped_slot_count--;
+                    slot_states.current--;
+                    slot_states.mapped--;
                     break;
                 case STATE4:
-                    current_slot_count++;
-                    mapped_slot_count++;
+                    slot_states.current++;
+                    slot_states.mapped++;
                     break;
                 }
                 break;
@@ -115,12 +127,12 @@ void YawIntHandler (void) {
                     switch(current_yaw_state)
                     {
                     case STATE3:
-                        current_slot_count--;
-                        mapped_slot_count--;
+                        slot_states.current--;
+                        slot_states.mapped--;
                         break;
                     case STATE1:
-                        current_slot_count++;
-                        mapped_slot_count++;
+                        slot_states.current++;
+                        slot_states.mapped++;
                         break;
                     }
                     break;
@@ -130,7 +142,7 @@ void YawIntHandler (void) {
 
 
 // *******************************************************
-//  YawIntHandler: Interrupt initialisation for the yaw interrupt.
+//  initYaw:       Interrupt initialisation for the yaw interrupt.
 //                 Sets PB0 and PB1 to be inputs, enables interrupts on GPIOB.
 //                 An interrupt occurs on both edges of PB0 and PB1 and when triggered,
 //                 runs the YawIntHandler function
@@ -153,35 +165,6 @@ void initYaw (void) {
     IntEnable(INT_GPIOB); //Enable interrupts on B.
 }
 
-int32_t get_current_slot_count(void)
-{
-    return current_slot_count;
-}
-
-int32_t get_mapped_slot_count(void)
-{
-    return mapped_slot_count;
-}
-
-void set_current_slot_count(int32_t set_count)
-{
-    current_slot_count = set_count;
-}
-
-void set_mapped_slot_count(int32_t set_count)
-{
-
-    mapped_slot_count = set_count;
-}
-
-/*
-   void find_yaw_ref(void) finds the reference yaw position. This is simply achieved by rotating the
-   helicopter at a constant duty cycle for the tail and main motors and checking if the
-   reference signal has gone low (Active low configuration). If the signal goes low  the current degrees is set to zero.
-   Called in case ORIENTATION: - void flight_modes_FSM (void).
- */
-
-
 
 void yawTask (void *pvparameters)
 {
@@ -191,12 +174,12 @@ void yawTask (void *pvparameters)
     while(1)
 
     {
-        if((mapped_slot_count >= slots_in_rig_circle) || (mapped_slot_count <= -slots_in_rig_circle)) {
-            mapped_slot_count = 0;
+        if((slot_states.mapped >= TOTAL_SLOTS) || (slot_states.mapped <= -TOTAL_SLOTS)) {
+            slot_states.mapped = 0;
             //If mapped slot count goes beyond 448 or -448 set it back to 0
         }
-        OperatingData.YawCurrent =  (2*current_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
-        OperatingData.YawCurrentMapped = (2*mapped_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
+        OperatingData.YawCurrent =  (2*slot_states.current*TOTAL_DEGREES + TOTAL_SLOTS) / 2 / TOTAL_SLOTS;
+        OperatingData.YawCurrentMapped = (2*slot_states.mapped*TOTAL_DEGREES + TOTAL_SLOTS) / 2 / TOTAL_SLOTS;
         //Mapped degrees stays within 360 to -360 for displaying purposes
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
 
@@ -206,6 +189,7 @@ void yawTask (void *pvparameters)
 
 uint32_t inityawTask(void)
 {
+    resetSlotState();
     if(xTaskCreate(yawTask, (const portCHAR *)"Get Yaw", YAW_TASK_STACK_SIZE, NULL,
                    PRIORITY_YAW_TASK, NULL) != pdTRUE)
     {

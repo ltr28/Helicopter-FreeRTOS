@@ -13,6 +13,7 @@
 #include "control.h"
 
 extern xSemaphoreHandle g_pUARTSemaphore;
+extern xSemaphoreHandle g_pDataSemaphore;
 extern OperatingData_t OperatingData;
 
 //********************************************************
@@ -68,7 +69,8 @@ UARTTask(void *pvparameters)
 
     {
         xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-        UARTprintf("\033[H\033[2JENCE461 HeliRig Emulator\n");
+        xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
+        //UARTprintf("\033[H\033[2JENCE461 HeliRig Emulator\n");
         UARTprintf("\nMode: %d\n", (int) OperatingData.HeliMode);
         UARTprintf("\nProperties:\n");
         UARTprintf("ALT: %d\n", (int) OperatingData.AltCurrent);
@@ -79,7 +81,7 @@ UARTTask(void *pvparameters)
         UARTprintf("ALT DUTY: %d\n", OperatingData.AltDuty);
         UARTprintf("YAW DUTY: %d\n", OperatingData.YawDuty);
 
-
+        xSemaphoreGive(g_pDataSemaphore);
         xSemaphoreGive(g_pUARTSemaphore);
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(100));
     }

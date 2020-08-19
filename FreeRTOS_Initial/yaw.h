@@ -2,30 +2,19 @@
 #define YAW_H_
 
 
-
-
-
 #include <stdint.h>
 
-int32_t get_actual_degrees(void);
+typedef struct Slots_s_t {
+    int32_t current;
+    int32_t mapped;
+} Slots_s;
 
 void
-set_current_slot_count(int32_t set_count);
+resetSlotState(void);
 
 void
-set_mapped_slot_count(int32_t set_count);
+EqualiseCurrentSlots(void);
 
-int32_t
-get_actual_degrees(void);
-
-int32_t
-get_mapped_degress(void);
-
-int32_t
-get_current_slot_count(void);
-
-int32_t
-get_mapped_slot_count(void);
 
 
 // *******************************************************
@@ -33,6 +22,9 @@ get_mapped_slot_count(void);
 void
 resetYaw (void);
 
+
+void
+CalculateYaw(void);
 
 // *******************************************************
 //  YawIntHandler:  Interrupt handler for the yaw interrupt.
@@ -52,8 +44,8 @@ initYaw (void);
 
 
 
-
-extern uint32_t inityawTask(void);
+uint32_t
+inityawTask(void);
 
 
 #endif /* YAW_H_*/

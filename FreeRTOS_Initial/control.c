@@ -94,14 +94,14 @@ void FlightFSM (void)
      */
     case ORIENTATION:
         OperatingData.AltDuty = 20;
-        OperatingData.YawDuty = 60;
+        OperatingData.YawDuty = 30;
         OperatingData.YawRef = 0;
         OperatingData.AltRef = 20;
         Alt_PID.i_error = OperatingData.AltDuty / Alt_PID.k_i; //Sets the original output to be the Alt Duty, smoothing the transition from orientation
         Yaw_PID.i_error = OperatingData.YawDuty / Yaw_PID.k_i; //Sets the original output to be the Yaw Duty, smoothing the transition from orientation
         if(OperatingData.HelicopterOrientated == true)
         {
-            resetYaw();
+            resetSlotState();
             OperatingData.HeliMode = TAKEOFF;
 
         }
@@ -139,7 +139,7 @@ void FlightFSM (void)
 
 
         if(SliderSwitch.status_current == 0) {
-            set_current_slot_count(get_mapped_slot_count());
+            EqualiseCurrentSlots();
             OperatingData.HeliMode = LANDING;
 /*
            current_slot_count is set to mapped_slot_count which stays within 448 to -448. So the
