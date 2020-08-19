@@ -71,4 +71,8 @@ set_main_pwm (uint32_t ui32Duty);
 void
 set_tail_pwm(uint32_t ui32Duty);
 
+// sets the duty cycle for the main and the tail motors
+void
+SetDuty (uint32_t main_duty,uint32_t tail_duty);
+
 #endif /*PWM_H_*/

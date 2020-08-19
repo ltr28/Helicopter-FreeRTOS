@@ -15,17 +15,13 @@
 
 // *******************************************************
 
-#include "AllHeaderFiles.h"
-
-#include "inc/tm4c123gh6pm.h"  // Board specific defines (for PF0)
 #include "buttons4.h"
+#include "AllHeaderFiles.h"
 #include "yaw.h"
 #include "timers.h"
 #include "control.h"
 #include "data_control.h"
-
 extern xSemaphoreHandle g_pUARTSemaphore;
-OperatingData_t OperatingData;
 
 // *******************************************************
 // Globals to module
@@ -50,11 +46,15 @@ int32_t last_press = 0;
 uint8_t slider_switch  = 0; // stores the current value of the slider switch
 uint8_t slider_switch_init = 0; // stores the initial value of the slider switch when everything is initialized in int main(void)
 
+Switch SliderSwitch;
 
 #define SLIDER_SWITCH_GPIO_BASE GPIO_PORTA_BASE
 #define SLIDER_SWITCH_GPIO_PIN GPIO_PIN_7
 #define YAW_REFERENCE_GPIO_BASE GPIO_PORTC_BASE
 #define YAW_REFERENCE_GPIO_PIN GPIO_PIN_4
+
+
+
 
 // *******************************************************
 // initButtons: Initialise the variables associated with the set of buttons
@@ -107,16 +107,11 @@ void initButtons(void)
 
 
 
+//   *******************************************************
+//   initSwitches: initializes the slider switch and the yaw reference gpio pins as an input.
+//   Configuration of the slider switch  - weak pull down
+//   Configuration of the yaw_reference  - weak pull up
 
-
-
-
-
-/*
-   void init_slider_switch_and_yaw_reference_pins(void) initializes the slider switch and the yaw reference gpio pins as an input.
-   Configuration of the slider switch  - weak pull down
-   Configuration of the yaw_reference  - weak pull up
- */
 void initSwitches(void)
 {
     GPIODirModeSet(YAW_REFERENCE_GPIO_BASE,
@@ -142,26 +137,24 @@ void initSwitches(void)
                      SLIDER_SWITCH_GPIO_PIN,
                      GPIO_STRENGTH_4MA,
                      GPIO_PIN_TYPE_STD_WPD);
-}
-
-uint8_t
-GetSliderSwitchInit (void)
-{
-    return slider_switch_init;
+    initSliderSwitch();
 }
 
 void
 initSliderSwitch (void)
 {
-    slider_switch_init =  GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
+
+    SliderSwitch.status_init = GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
+    SliderSwitch.status_current =  SliderSwitch.status_init;
 }
 
-uint8_t
-SetSliderSwitch (void)
+void
+UpdateSliderSwitch (void)
 {
-    slider_switch = GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
-    return slider_switch;
+    SliderSwitch.status_current = GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
 }
+
+
 // *******************************************************
 // updateButtons: Function designed to be called regularly. It polls all
 // buttons once and updates variables associated with the buttons if
@@ -307,10 +300,6 @@ void vTimerCallback(TimerHandle_t xTimer)
     configASSERT( xTimer );
     updateButtons();
     mode_180 += 1;
-//    if(mode_180 == 20)
-//    {
-//        mode_180 = 0;
-//    }
 }
 
 void initButtonTimer(void)
@@ -342,7 +331,7 @@ void initButtonTimer(void)
 uint32_t initButtonTask(void)
 {
     //Create the task
-    if (xTaskCreate(ButtonTask, (const portCHAR *) "BUT", 100, NULL,
+    if (xTaskCreate(ButtonTask, (const portCHAR *) "BUT", BUT_TASK_STACK_SIZE, NULL,
                     tskIDLE_PRIORITY + PRIORITY_BUT_TASK, NULL) != pdTRUE)
     {
         return (1);

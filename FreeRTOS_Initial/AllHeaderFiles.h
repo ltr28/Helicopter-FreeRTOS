@@ -9,14 +9,14 @@
 #define ALLHEADERFILES_H_
 
 // By:  Texas Instruments
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include "stdlib.h"
+#include "stdint.h"
+#include "stdbool.h"
+#include "stdio.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
-#include "inc/hw_ints.h"
-#include <inc/hw_gpio.h>
+#include "inc/hw_gpio.h"
+#include "inc/tm4c123gh6pm.h"  // Board specific defines (for PF0)
+
 
 #include "driverlib/pin_map.h" //Needed for pin configure
 #include "driverlib/gpio.h"
@@ -47,6 +47,9 @@
 
 
 //Object Oriented Includes
-#include <data_control.h>
+#include "data_control.h"
+#include "pid.h"
+
+OperatingData_t OperatingData;
 
 #endif /* ALLHEADERFILES_H_ */

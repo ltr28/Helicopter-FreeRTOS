@@ -8,16 +8,9 @@
 // Last modified:   16.4.2018
 //
 
-
-#include <AllHeaderFiles.h>
-#include <uart.h>
-#include <altitude.h>
-#include "yaw.h"
-#include "pid.h"
+#include "uart.h"
+#include "AllHeaderFiles.h"
 #include "control.h"
-
-extern PID_t Alt_PID;
-extern PID_t Yaw_PID;
 
 extern xSemaphoreHandle g_pUARTSemaphore;
 extern OperatingData_t OperatingData;
@@ -94,7 +87,7 @@ UARTTask(void *pvparameters)
 
 int32_t initUARTTask(void)
 {
-    if(xTaskCreate(UARTTask, (const portCHAR *)"UART", 100, NULL,
+    if(xTaskCreate(UARTTask, (const portCHAR *)"UART", UART_TASK_STACK_SIZE, NULL,
                        PRIORITY_UART_TASK, NULL) != pdTRUE)
         {
             return(1); //Error occurred
@@ -105,3 +98,56 @@ int32_t initUARTTask(void)
         return(0);
 }
 
+OperatingData_t OperatingData;
+volatile uint8_t slowTick = false;
+
+//  *****************************************************************************
+//  initDisplay:        Initialises Display using OrbitLED functions
+void initDisplay (void)
+{
+    // Initialise the Orbit OLED display
+    OLEDInitialise ();
+}
+
+
+//*****************************************************************************
+//  OutputToDisplay:       Prints data on the OLED Display. Used on the microcontroller
+void OutputToDisplay(void)
+{
+    char buffer[16];
+    sprintf (buffer, "ALT: %d", OperatingData.AltCurrent);
+    OLEDStringDraw (buffer, 0, 0); // Update line on display.
+    sprintf (buffer, "YAW: %d", OperatingData.YawCurrentMapped);
+    OLEDStringDraw (buffer, 0, 1); // Update line on display.
+    sprintf (buffer, "ALT REF: %d", OperatingData.AltRef);
+    OLEDStringDraw (buffer, 0, 2); // Update line on display.
+    sprintf (buffer, "YAW REF: %d", OperatingData.YawRefMapped);
+    OLEDStringDraw (buffer, 0, 3); // Update line on display.
+}
+
+
+//  *****************************************************************************
+//  DisplayTask:    FreeRTOS Task displaying the helicopter altitude, height and references on the OLED Display
+static void DisplayTask(void *pvparameters)
+{
+    TickType_t xTime;
+    xTime = xTaskGetTickCount();
+    while(1)
+    {
+        OutputToDisplay();
+        vTaskDelayUntil(&xTime, pdMS_TO_TICKS(100));
+    }
+}
+
+//  *****************************************************************************
+//  initDisplayTask:    Initialises the FreeRTOS Task displaying the helicopter altitude, height and references
+int32_t initDisplayTask(void)
+{
+    if(xTaskCreate(DisplayTask, (const portCHAR *)"DISPLAY", DISPLAY_TASK_STACK_SIZE,
+                   NULL, PRIORITY_DISPLAY_TASK, NULL) != pdTRUE)
+     {
+         return(1);
+     }
+
+     return (0);
+}

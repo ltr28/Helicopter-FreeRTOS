@@ -7,8 +7,8 @@
    KI_alt - Integral gain for the altitude
    KD_alt - Derivative gain for the altitude
  */
-#define KP_alt 2
-#define KI_alt 1
+#define KP_alt 2.5
+#define KI_alt 0.5
 #define KD_alt 0
 
 
@@ -17,8 +17,8 @@
    KI_yaw - Integral gain for the yaw
    KD_yaw - Derivative gain for the yaw
  */
-#define KP_yaw 2
-#define KI_yaw 1
+#define KP_yaw 1.5
+#define KI_yaw 0.5
 #define KD_yaw 0
 #define DELTA_T 0.01
 

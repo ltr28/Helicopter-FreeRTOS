@@ -21,7 +21,6 @@
 
 
 #include "AllHeaderFiles.h"
-#include "circBufT.h"
 #include "pid.h"
 #include "uart.h"
 
@@ -33,7 +32,6 @@ BaseType_t xHigherPriorityTaskWoken;
 #define ADC_QUEUE_ITEM_SIZE sizeof(uint32_t)
 #define RANGE_ALTITUDE  953
 
-int32_t percentage;
 int32_t initial_position;
 bool init_land_alt = false;
 
@@ -150,7 +148,6 @@ void ADCReceiveTask(void *p)
     {
 
         OperatingData.AltCurrent = percentAltitude();
-//        UARTprintf("ALT: %d\n", (int) percentage);
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 
@@ -162,8 +159,8 @@ uint32_t
 initADCTriggerTask(void)
 {
     xADCQueue = xQueueCreate( BUF_SIZE, ADC_QUEUE_ITEM_SIZE );
-    if(xTaskCreate(ADCTriggerTask, (const portCHAR *)"Get Sample", 100, NULL,
-                   tskIDLE_PRIORITY + PRIORITY_ALT_TASK, NULL) != pdTRUE)
+    if(xTaskCreate(ADCTriggerTask, (const portCHAR *)"Get Sample", ADCS_TASK_STACK_SIZE, NULL,
+                   PRIORITY_ADCS_TASK, NULL) != pdTRUE)
     {
         return(1);
     }
@@ -178,8 +175,8 @@ uint32_t
 intADCReceiveTask(void)
 {
 
-    if(xTaskCreate(ADCReceiveTask, (const portCHAR *)"Altitude_Calc", 100, NULL,
-                   2, NULL) != pdTRUE)
+    if(xTaskCreate(ADCReceiveTask, (const portCHAR *)"Altitude_Calc", ADCR_TASK_STACK_SIZE, NULL,
+                   PRIORITY_ADCR_TASK, NULL) != pdTRUE)
     {
         return(1);
     }

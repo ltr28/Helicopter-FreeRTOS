@@ -45,8 +45,8 @@ void calculate_degrees(void)
 // *******************************************************
 // resetYaw:        Resets the slot number to 0
 void resetYaw (void) {
-    OperatingData.YawCurrentMapped = 0;
-    OperatingData.YawCurrent = 0;
+    mapped_slot_count = 0;
+    current_slot_count = 0;
 }
 
 
@@ -191,21 +191,13 @@ void yawTask (void *pvparameters)
     while(1)
 
     {
-        //GPIOIntRegister(GPIO_PORTB_BASE, YawIntHandler); //If interrupt occurs, run YawIntHandler
-        if((mapped_slot_count >= slots_in_rig_circle) || (mapped_slot_count <= -slots_in_rig_circle)) /*
-                                                                                                             if mapped slot count goes beyond
-                                                                                                             448 or -448 set it back to 0.*/
-            {
-                OperatingData.YawCurrentMapped = 0;
-            }
+        if((mapped_slot_count >= slots_in_rig_circle) || (mapped_slot_count <= -slots_in_rig_circle)) {
+            mapped_slot_count = 0;
+            //If mapped slot count goes beyond 448 or -448 set it back to 0
+        }
         OperatingData.YawCurrent =  (2*current_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
         OperatingData.YawCurrentMapped = (2*mapped_slot_count*degrees_in_circle + slots_in_rig_circle) / 2 / slots_in_rig_circle;
         //Mapped degrees stays within 360 to -360 for displaying purposes
-
-//        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-//        UARTprintf("Mapped Degrees: %d\n ", OperatingData.YawMapped);
-//        xSemaphoreGive(g_pUARTSemaphore);
-
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
 
 
@@ -214,7 +206,7 @@ void yawTask (void *pvparameters)
 
 uint32_t inityawTask(void)
 {
-    if(xTaskCreate(yawTask, (const portCHAR *)"Get Yaw", 200, NULL,
+    if(xTaskCreate(yawTask, (const portCHAR *)"Get Yaw", YAW_TASK_STACK_SIZE, NULL,
                    PRIORITY_YAW_TASK, NULL) != pdTRUE)
     {
         return(1);

@@ -8,6 +8,7 @@
 #ifndef _CONTROL_H_
 #define _CONTROL_H_
 
+#include <data_control.h>
 #include <stdint.h>
 
 OperatingData_t
@@ -16,10 +17,6 @@ OperatingData_init (void);
 // Functions declarations
 void
 YawRefHandler(void);
-
-// sets the duty cycle for the main and the tail motors
-void
-SetDuty (uint32_t main_duty,uint32_t tail_duty);
 
 void
 FlightFSM (void);

@@ -13,22 +13,18 @@
    example which was given in PID 3 lecture notes of ENCE 361.
  */
 
-#include <altitude.h>
 #include "AllHeaderFiles.h"
 #include "yaw.h"
 #include "pwm.h"
 #include "buttons4.h"
-#include "pid.h"
 
 extern xSemaphoreHandle g_pUARTSemaphore;
 extern xSemaphoreHandle g_pDataSemaphore;
-extern OperatingData_t OperatingData;
 
-extern uint8_t slider_switch;
-extern uint8_t slider_switch_init;
-
+OperatingData_t OperatingData;
 PID_t Alt_PID;
 PID_t Yaw_PID;
+Switch SliderSwitch;
 
 
 OperatingData_t OperatingData_init (void)
@@ -64,14 +60,7 @@ void YawRefHandler(void)
     //
 }
 
-void
-SetDuty(uint32_t main_duty,uint32_t tail_duty)
-{
-    OperatingData.AltDuty = main_duty;
-    OperatingData.YawDuty = tail_duty;
-    set_main_pwm(main_duty);
-    set_tail_pwm(tail_duty);
-}
+
 
 /*
    void flight_modes_FSM (void) controls what helicopter does in each flight mode and what causes the helicopter to change the flight mode.
@@ -84,11 +73,10 @@ SetDuty(uint32_t main_duty,uint32_t tail_duty)
  */
 void FlightFSM (void)
 {
-    slider_switch = SetSliderSwitch();
-    slider_switch_init = GetSliderSwitchInit();
-    if(slider_switch_init == 128 && slider_switch == 0) {
-        slider_switch_init = 0;
-    } else if (slider_switch_init == 0 && slider_switch == 0) {
+    UpdateSliderSwitch();
+    if(SliderSwitch.status_init == 128 && SliderSwitch.status_current == 0) {
+        SliderSwitch.status_init = 0;
+    } else if (SliderSwitch.status_init == 0 && SliderSwitch.status_current == 0) {
         OperatingData.HeliMode = LANDED;
     }
     /*If the initial value of the slider switch is high and the current value
@@ -106,9 +94,11 @@ void FlightFSM (void)
      */
     case ORIENTATION:
         OperatingData.AltDuty = 20;
-        OperatingData.YawDuty = 50;
+        OperatingData.YawDuty = 60;
         OperatingData.YawRef = 0;
         OperatingData.AltRef = 20;
+        Alt_PID.i_error = OperatingData.AltDuty / Alt_PID.k_i; //Sets the original output to be the Alt Duty, smoothing the transition from orientation
+        Yaw_PID.i_error = OperatingData.YawDuty / Yaw_PID.k_i; //Sets the original output to be the Yaw Duty, smoothing the transition from orientation
         if(OperatingData.HelicopterOrientated == true)
         {
             resetYaw();
@@ -148,7 +138,7 @@ void FlightFSM (void)
         SetDuty(Alt_PID.output, Yaw_PID.output);
 
 
-        if(slider_switch == 0) {
+        if(SliderSwitch.status_current == 0) {
             set_current_slot_count(get_mapped_slot_count());
             OperatingData.HeliMode = LANDING;
 /*
@@ -214,10 +204,7 @@ void FlightFSM (void)
         Yaw_PID = PIDReset(Yaw_PID);
         SetDuty(OperatingData.AltDuty, OperatingData.YawDuty);
 
-
-
-
-        if(slider_switch == 128 && slider_switch_init == 0) {
+        if(SliderSwitch.status_current == 128 && SliderSwitch.status_init == 0) {
           //The if statement prevents the heli from going into ORIENTATION mode
           //from landed mode if the slider switch is already pushed up at the start of the program.
             if(OperatingData.HelicopterOrientated == false) {
@@ -250,7 +237,7 @@ uint32_t initControlTask (void)
 {
     Alt_PID = pid_alt_init();
     Yaw_PID = pid_yaw_init();
-    if(xTaskCreate(ControlTask, (const portCHAR *)"Control_heli", 128, NULL,
+    if(xTaskCreate(ControlTask, (const portCHAR *)"Control_heli", CONTROL_TASK_STACK_SIZE, NULL,
                    PRIORITY_CONTROL_TASK, NULL) != pdTRUE)
     {
         return(1);

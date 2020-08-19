@@ -1,34 +1,31 @@
 //*****************************************************************************
 //
-// Milestone 1 - Displaying helicopter altitude as a percentage
+// ENCE 464 Heli Rig - Main Function
 //
 // Author:  N. James
 //          L. Trenberth
 //          A. Chhabra
-// Last modified:	31.5.2019
+// Last modified:	20.08.2020
 
 #include <AllHeaderFiles.h>
+
 #include "altitude.h"
 #include "uart.h"
 #include "yaw.h"
 #include "buttons4.h"
 #include "control.h"
 #include "pwm.h"
-#include "display.h"
 
 
-// The mutex that protects concurrent access of UART from multiple tasks.
-//
 //*****************************************************************************
+// The mutex that protects concurrent access of UART from multiple tasks.
 xSemaphoreHandle g_pUARTSemaphore;
 xSemaphoreHandle g_pADCSemaphore;
+
 OperatingData_t OperatingData;
 
 //*****************************************************************************
-//
 // This hook is called by FreeRTOS when an stack overflow error is detected.
-//
-//*****************************************************************************
 void
 vApplicationStackOverflowHook(xTaskHandle *pxTask, char *pcTaskName)
 {
@@ -145,6 +142,16 @@ int main(void)
           }
 
       }
+
+//    if(initDisplayTask() != 0) {
+//          while(1)
+//          {
+//
+//          }
+//
+//      }
+
+
 
 
     vTaskStartScheduler();

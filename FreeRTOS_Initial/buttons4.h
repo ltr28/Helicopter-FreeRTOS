@@ -16,7 +16,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "AllHeaderFiles.h"
+#include "timers.h"
 
 
 
@@ -94,21 +95,44 @@ initSwitches(void);
 ////                      necessary.  It is efficient enough to be part of an ISR, e.g. from
 ////                      a SysTick interrupt.
 
-int8_t
-get_alt_ref(void);
+typedef struct Switch_s {
+    uint8_t status_init;
+    uint8_t status_current;
+} Switch;
 
-uint8_t
-GetSliderSwitchInit (void);
+
+void
+initButtons(void);
+
+
+void
+initSwitches(void);
 
 void
 initSliderSwitch (void);
 
+void
+UpdateSliderSwitch (void);
+
+void
+updateButtons(void);
+
 uint8_t
-SetSliderSwitch (void);
+checkButton(uint8_t butName);
+
+void
+UpdateReferences(void);
+
+void
+ButtonTask(void *pvParameters);
+
+void
+vTimerCallback(TimerHandle_t xTimer);
+
+void
+initButtonTimer(void);
 
 uint32_t
 initButtonTask(void);
-
-void initButtonTimer(void);
 
 #endif /*BUTTONS_H_*/
