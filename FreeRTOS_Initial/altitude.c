@@ -18,24 +18,24 @@
     1. void ADCIntHandler(void) -  void adc_int_handler(void)
     2. void initADC (void)      -  void init_adc (void)
  */
-
+#define BUF_SIZE 25
+#define ADC_QUEUE_ITEM_SIZE sizeof(uint32_t)
+#define RANGE_ALTITUDE  953
 
 #include "AllHeaderFiles.h"
 #include "pid.h"
 #include "uart.h"
 
 OperatingData_t OperatingData;
-xSemaphoreHandle g_pUARTSemaphore;
+xSemaphoreHandle g_pDataSemaphore;
+QueueHandle_t xADCQueue;
 BaseType_t xHigherPriorityTaskWoken;
 
-#define BUF_SIZE 25
-#define ADC_QUEUE_ITEM_SIZE sizeof(uint32_t)
-#define RANGE_ALTITUDE  953
 
 int32_t initial_position;
 bool init_land_alt = false;
 
-QueueHandle_t xADCQueue;
+
 
 /*
   The handler for the ADC conversion complete interrupt.
@@ -146,8 +146,9 @@ void ADCReceiveTask(void *p)
 
     while (1)
     {
-
+        xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
         OperatingData.AltCurrent = percentAltitude();
+        xSemaphoreGive(g_pDataSemaphore);
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 

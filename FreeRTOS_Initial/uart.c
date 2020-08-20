@@ -12,9 +12,9 @@
 #include "AllHeaderFiles.h"
 #include "control.h"
 
-extern xSemaphoreHandle g_pUARTSemaphore;
-extern xSemaphoreHandle g_pDataSemaphore;
-extern OperatingData_t OperatingData;
+xSemaphoreHandle g_pUARTSemaphore;
+xSemaphoreHandle g_pDataSemaphore;
+OperatingData_t OperatingData;
 
 //********************************************************
 // initialiseUSB_UART - 8 bits, 1 stop bit, no parity
@@ -68,18 +68,31 @@ UARTTask(void *pvparameters)
     while(1)
 
     {
+//        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
+//        xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
+//        //UARTprintf("\033[H\033[2JENCE461 HeliRig Emulator\n");
+//        UARTprintf("\nMode: %d\n", (int) OperatingData.HeliMode);
+//        UARTprintf("\nProperties:\n");
+//        UARTprintf("ALT: %d\n", (int) OperatingData.AltCurrent);
+//        UARTprintf("YAW: %d\n", (int)OperatingData.YawCurrentMapped);
+//        UARTprintf("ALT REF: %d\n", (int) OperatingData.AltRef);
+//        UARTprintf("YAW REF: %d\n", (int) OperatingData.YawRefMapped);
+//        UARTprintf("\nMotor Properties:\n");
+//        UARTprintf("ALT DUTY: %d\n", OperatingData.AltDuty);
+//        UARTprintf("YAW DUTY: %d\n", OperatingData.YawDuty);
+//
+//        xSemaphoreGive(g_pDataSemaphore);
+//        xSemaphoreGive(g_pUARTSemaphore);
+//        vTaskDelayUntil(&xTime, pdMS_TO_TICKS(100));
+
         xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
         xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
-        //UARTprintf("\033[H\033[2JENCE461 HeliRig Emulator\n");
-        UARTprintf("\nMode: %d\n", (int) OperatingData.HeliMode);
-        UARTprintf("\nProperties:\n");
-        UARTprintf("ALT: %d\n", (int) OperatingData.AltCurrent);
-        UARTprintf("YAW: %d\n", (int)OperatingData.YawCurrentMapped);
-        UARTprintf("ALT REF: %d\n", (int) OperatingData.AltRef);
-        UARTprintf("YAW REF: %d\n", (int) OperatingData.YawRefMapped);
-        UARTprintf("\nMotor Properties:\n");
-        UARTprintf("ALT DUTY: %d\n", OperatingData.AltDuty);
-        UARTprintf("YAW DUTY: %d\n", OperatingData.YawDuty);
+        UARTprintf("ALT: %d", (int) OperatingData.AltCurrent);
+        UARTprintf("YAW: %d", (int)OperatingData.YawCurrentMapped);
+        UARTprintf("ALT REF: %d", (int) OperatingData.AltRef);
+        UARTprintf("YAW REF: %d", (int) OperatingData.YawRefMapped);
+        UARTprintf("ALT DUTY: %d", OperatingData.AltDuty);
+        UARTprintf("YAW DUTY: %d", OperatingData.YawDuty);
 
         xSemaphoreGive(g_pDataSemaphore);
         xSemaphoreGive(g_pUARTSemaphore);

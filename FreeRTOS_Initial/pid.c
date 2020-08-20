@@ -7,9 +7,9 @@
    KI_alt - Integral gain for the altitude
    KD_alt - Derivative gain for the altitude
  */
-#define KP_alt 1
-#define KI_alt 0.1
-#define KD_alt 0
+#define KP_alt 0.7
+#define KI_alt 0.2
+#define KD_alt 1
 
 
 /* _yaw - tail_rotor
@@ -17,9 +17,9 @@
    KI_yaw - Integral gain for the yaw
    KD_yaw - Derivative gain for the yaw
  */
-#define KP_yaw 1
-#define KI_yaw 0.1
-#define KD_yaw 0
+#define KP_yaw 0.6
+#define KI_yaw 0.05
+#define KD_yaw 1
 #define DELTA_T 0.01
 
 PID_t
@@ -75,7 +75,7 @@ PIDUpdate (PID_t PID, int32_t current, int32_t set)
     PID.current = current;
     PID.p_error = set - current;
     PID.i_error += PID.p_error * PID.delta_t;
-    PID.d_error = (PID.current - PID.previous)*PID.delta_t;
+    PID.d_error = (PID.current - PID.previous)/PID.delta_t;
     PID.output = (PID.p_error * PID.k_p) + (PID.i_error * PID.k_i) + (PID.d_error * PID.k_d);
     PID.previous = PID.current;
     if (PID.output < PID.min_out) {

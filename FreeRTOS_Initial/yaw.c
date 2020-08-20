@@ -178,8 +178,10 @@ void yawTask (void *pvparameters)
             slot_states.mapped = 0;
             //If mapped slot count goes beyond 448 or -448 set it back to 0
         }
+        xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
         OperatingData.YawCurrent =  (2*slot_states.current*TOTAL_DEGREES + TOTAL_SLOTS) / 2 / TOTAL_SLOTS;
         OperatingData.YawCurrentMapped = (2*slot_states.mapped*TOTAL_DEGREES + TOTAL_SLOTS) / 2 / TOTAL_SLOTS;
+        xSemaphoreGive(g_pDataSemaphore);
         //Mapped degrees stays within 360 to -360 for displaying purposes
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
 
