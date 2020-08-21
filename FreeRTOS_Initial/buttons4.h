@@ -25,11 +25,8 @@
 #ifndef BUTTONS_H_
 #define BUTTONS_H_
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "AllHeaderFiles.h"
 #include "timers.h"
-
 
 
 //*****************************************************************************
@@ -65,9 +62,7 @@ enum butStates {RELEASED = 0, PUSHED, NO_CHANGE};
 #define YAW_REFERENCE_GPIO_BASE GPIO_PORTC_BASE
 #define YAW_REFERENCE_GPIO_PIN GPIO_PIN_4
 
-extern int32_t set_alt_point; // desired altitude
-extern int32_t set_yaw_point; // desired yaw
-extern int32_t mapped_set_yaw_point; // mapped_set_yaw_point stays within 360 to -360 unlike set_yaw_point. For display purposes.
+
 // Debounce algorithm:  A state machine is associated with each button.
 //                      A state change occurs only after NUM_BUT_POLLS consecutive polls have
 //                      read the pin in the opposite condition, before the state changes and

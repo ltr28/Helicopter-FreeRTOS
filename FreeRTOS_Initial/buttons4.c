@@ -42,19 +42,11 @@ bool button_flag;
 
 static TimerHandle_t timer;
 volatile int mode_180 = 0;
-int32_t set_alt_point = 0; // desired altitude
-
-int32_t mapped_set_yaw_point = 0; // mapped_set_yaw_point stays within 360 to -360 unlike set_yaw_point. For display purposes.\
 
 int32_t current_press = 0;
 int32_t last_press = 0;
-
-
-// *******************************************************
-uint8_t slider_switch  = 0; // stores the current value of the slider switch
-uint8_t slider_switch_init = 0; // stores the initial value of the slider switch when everything is initialized in int main(void)
-
 Switch SliderSwitch;
+
 
 #define SLIDER_SWITCH_GPIO_BASE GPIO_PORTA_BASE
 #define SLIDER_SWITCH_GPIO_PIN GPIO_PIN_7
