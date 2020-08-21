@@ -26,7 +26,10 @@ PID_t Alt_PID;
 PID_t Yaw_PID;
 Switch SliderSwitch;
 
-
+//*****************************************************************************
+// OperatingData_init:      The OperatingData_init function, initialising the Operating Data structure
+//                          with given states and values
+// RETURNS:                 The Operating Data structure with set initial variables
 OperatingData_t OperatingData_init (void)
 {
     OperatingData_t OperatingData;
@@ -40,11 +43,17 @@ OperatingData_t OperatingData_init (void)
     OperatingData.HeliMode = LANDED;
     OperatingData.AltDuty = 20;
     OperatingData.YawDuty = 50;
-    return (OperatingData_t) OperatingData;
+    return (OperatingData_t) (OperatingData);
 }
 
 
-
+//*****************************************************************************
+// YawRefHandler:           When the reference signal is triggered, the
+//                          YawRefHandler reads the current yaw value. If the helicopter
+//                          is not oriented already and the yaw variable has been set,
+//                          the oriented state is set to True.
+//                          with given states and values
+// RETURNS:                 The Operating Data structure with set initial variables
 void YawRefHandler(void)
 {
     OperatingData.YawCurrent  =  GPIOPinRead(GPIO_PORTC_BASE, GPIO_PIN_4);
@@ -62,15 +71,10 @@ void YawRefHandler(void)
 
 
 
-/*
-   void flight_modes_FSM (void) controls what helicopter does in each flight mode and what causes the helicopter to change the flight mode.
-   There are five flight modes:
-   1.Landed (* The program will initially start in LANDED mode regardless of slider switch position)
-   2.Orientation
-   3.Take off
-   4.Flying
-   5.Landing
- */
+//*****************************************************************************
+// FlightFSM:               Sets the Controls in each flight mode
+//                          Triggers flight mode changes.
+//                          OperatingData structure is updated based on flight conditions
 void FlightFSM (void)
 {
     UpdateSliderSwitch();
@@ -80,8 +84,8 @@ void FlightFSM (void)
         OperatingData.HeliMode = LANDED;
     }
     /*If the initial value of the slider switch is high and the current value
-                                                                                     of the slider switch is low - (the slider switch has been pushed down),
-                                                                                     so set the initial value to low. Go to case LANDED:*/
+     of the slider switch is low - (the slider switch has been pushed down),
+     so set the initial value to low. Go to case LANDED: */
 
     switch(OperatingData.HeliMode)
     {
@@ -155,15 +159,13 @@ void FlightFSM (void)
          */
     case LANDING:
     /*
-       void landing (void) is being used for the smooth landing of the helicopter.
-       This function monitors that the altitude should drop by only 10%  if the helicopter is facing
-       the reference yaw position(0 degrees) and the current altitude is same as the desired altitude.
-       PID is used to control the duty cycle of both the tail and main motors.
-       Called in case LANDING: - void flight_modes_FSM (void).
+       The landing state smooths the landing of the helicopter.
+       The altitude reference should drop by only 10% if the helicopter is facing the reference
+       yaw position(0 degrees) and the current altitude is same as the desired altitude.
+       PID controls the duty cycle of both the tail and main motors.
      */
         OperatingData.YawRef = 0;
         OperatingData.YawCurrentMapped = 0;
-
         Alt_PID = PIDUpdate(Alt_PID, OperatingData.AltCurrent, OperatingData.AltRef);
         Yaw_PID = PIDUpdate(Yaw_PID, OperatingData.YawCurrent, OperatingData.YawRef);
         SetDuty(Alt_PID.output, Yaw_PID.output);
@@ -221,6 +223,10 @@ void FlightFSM (void)
     }
 }
 
+
+//*****************************************************************************
+// ControlTask:             The FreeRTOS task controlling the helicopter control states, calling FlightFSM
+//                          Runs continuously
 void ControlTask (void *pvparameters)
 {
     TickType_t xTime;
@@ -228,20 +234,23 @@ void ControlTask (void *pvparameters)
 
     while(1)
     {
-        FlightFSM();
+        FlightFSM(); //Set states
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
     }
 }
 
+
+//*****************************************************************************
+// ControlTask:             The  FreeRTOS task ControlTask initialisation
 uint32_t initControlTask (void)
 {
-    Alt_PID = pid_alt_init();
+    Alt_PID = pid_alt_init(); //Initialises the Alt_PID and Yaw_PID structures
     Yaw_PID = pid_yaw_init();
     if(xTaskCreate(ControlTask, (const portCHAR *)"Control_heli", CONTROL_TASK_STACK_SIZE, NULL,
                    PRIORITY_CONTROL_TASK, NULL) != pdTRUE)
     {
-        return(1);
+        return(1); //Error has occurred
     }
 
-    return(0);
+    return(0); //Success
 }
