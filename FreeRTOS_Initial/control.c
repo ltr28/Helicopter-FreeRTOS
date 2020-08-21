@@ -1,17 +1,18 @@
-/*
-    pid_control.c
+/*****************************************************************************
 
-    Created on: 27/05/2019
-    Team_members: Abhimanyu Chhabra(99799242), Saranya Ramani(27179399), Jin Kim(79903309)
+ ENCE 464 Heli Rig - control.c
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+ Purpose:           Contains State Based control functions which are required to
+                    maintain the desired altitude and the desired yaw
+
  */
 
-/*
-   pid_control.c file contains PID control functions which are required to
-   maintain the desired altitude and the desired yaw of the helicopter.
-
-   The pid update functions for the altitude and the yaw in this file are based on the pid update
-   example which was given in PID 3 lecture notes of ENCE 361.
- */
 
 #include "AllHeaderFiles.h"
 #include "control.h"

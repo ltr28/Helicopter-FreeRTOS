@@ -1,3 +1,17 @@
+/*****************************************************************************
+
+ ENCE 464 Heli Rig - data_control.h
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+Purpose:            Creates the OperatingData_t structure, used for data_control through files
+ */
+
+
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 

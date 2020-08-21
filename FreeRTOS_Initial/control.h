@@ -1,8 +1,16 @@
-/*
-    pid_control.h (Header file for control.c)
+/*****************************************************************************
 
-    Created on: 27/05/2019
-    Team_members: Abhimanyu Chhabra(99799242), Saranya Ramani(27179399), Jin Kim(79903309)
+ ENCE 464 Heli Rig - control.h
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+ Purpose:           Contains State Based control functions which are required to
+                    maintain the desired altitude and the desired yaw
+
  */
 
 #ifndef _CONTROL_H_

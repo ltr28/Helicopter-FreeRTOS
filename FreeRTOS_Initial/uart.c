@@ -1,12 +1,16 @@
-//********************************************************
-//
-// uartDemo.c - Example code for ENCE361
-//
-// Link with modules:  buttons2, OrbitOLEDInterface
-//
-// Author:  P.J. Bones  UCECE
-// Last modified:   16.4.2018
-//
+/*****************************************************************************
+
+ ENCE 464 Heli Rig - uart.c
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+ Purpose:           Contains functions to initialise and control UART on the Helicopter Rigs
+
+ */
 
 #include "uart.h"
 #include "AllHeaderFiles.h"
@@ -16,20 +20,19 @@ xSemaphoreHandle g_pUARTSemaphore;
 xSemaphoreHandle g_pDataSemaphore;
 OperatingData_t OperatingData;
 
-//********************************************************
-// initialiseUSB_UART - 8 bits, 1 stop bit, no parity
-//********************************************************
+
+
+//  *****************************************************************************
+//  initialiseUSB_UART:     Initializes UART with 8 bits, 1 stop bit, no parity
 void
 initialiseUSB_UART (void)
 {
-    //
+
     // Enable GPIO port A which is used for UART0 pins.
-    //
     SysCtlPeripheralEnable(UART_USB_PERIPH_UART);
     SysCtlPeripheralEnable(UART_USB_PERIPH_GPIO);
-    //
+
     // Select the alternate (UART) function for these pins.
-    //
     GPIOPinTypeUART(UART_USB_GPIO_BASE, UART_USB_GPIO_PINS);
     GPIOPinConfigure (GPIO_PA0_U0RX);
     GPIOPinConfigure (GPIO_PA1_U0TX);
@@ -45,9 +48,9 @@ initialiseUSB_UART (void)
 }
 
 
-//**********************************************************************
-// Transmit a string via UART0
-//**********************************************************************
+
+//  *****************************************************************************
+//  UARTSend:               Transmit a string via UART0
 void
 UARTSend (char *pucBuffer)
 {
@@ -60,6 +63,9 @@ UARTSend (char *pucBuffer)
     }
 }
 
+//  *****************************************************************************
+//  UARTTask:               FreeRTOS UART Task
+//                          First set of comments for Emulator, Seconds for Rig
 void
 UARTTask(void *pvparameters)
 {
@@ -68,6 +74,7 @@ UARTTask(void *pvparameters)
     while(1)
 
     {
+        //Emulator UART
 //        xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
 //        xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
 //        //UARTprintf("\033[H\033[2JENCE461 HeliRig Emulator\n");
@@ -85,6 +92,7 @@ UARTTask(void *pvparameters)
 //        xSemaphoreGive(g_pUARTSemaphore);
 //        vTaskDelayUntil(&xTime, pdMS_TO_TICKS(100));
 
+        //Lab Share UART
         xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
         xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
         UARTprintf("ALT: %d", (int) OperatingData.AltCurrent);
@@ -100,6 +108,8 @@ UARTTask(void *pvparameters)
     }
 }
 
+//  *****************************************************************************
+//  initUARTTask:           Initialises the FreeRTOS UART Task
 int32_t initUARTTask(void)
 {
     if(xTaskCreate(UARTTask, (const portCHAR *)"UART", UART_TASK_STACK_SIZE, NULL,
@@ -117,7 +127,7 @@ OperatingData_t OperatingData;
 volatile uint8_t slowTick = false;
 
 //  *****************************************************************************
-//  initDisplay:        Initialises Display using OrbitLED functions
+//  initDisplay:            Initialises Display using OrbitLED functions
 void initDisplay (void)
 {
     // Initialise the Orbit OLED display
@@ -126,7 +136,7 @@ void initDisplay (void)
 
 
 //*****************************************************************************
-//  OutputToDisplay:       Prints data on the OLED Display. Used on the microcontroller
+//  OutputToDisplay:        Prints data on the OLED Display. Used on the microcontroller
 void OutputToDisplay(void)
 {
     char buffer[16];
@@ -142,7 +152,7 @@ void OutputToDisplay(void)
 
 
 //  *****************************************************************************
-//  DisplayTask:    FreeRTOS Task displaying the helicopter altitude, height and references on the OLED Display
+//  DisplayTask:            FreeRTOS Task displaying the helicopter altitude, height and references on the OLED Display
 static void DisplayTask(void *pvparameters)
 {
     TickType_t xTime;
@@ -155,7 +165,7 @@ static void DisplayTask(void *pvparameters)
 }
 
 //  *****************************************************************************
-//  initDisplayTask:    Initialises the FreeRTOS Task displaying the helicopter altitude, height and references
+//  initDisplayTask:        Initialises the FreeRTOS Task displaying the helicopter altitude, height and references
 int32_t initDisplayTask(void)
 {
     if(xTaskCreate(DisplayTask, (const portCHAR *)"DISPLAY", DISPLAY_TASK_STACK_SIZE,

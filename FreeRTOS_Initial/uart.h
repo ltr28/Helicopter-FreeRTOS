@@ -1,8 +1,15 @@
-/*
- * uart.h
- *
- *  Created on: May 20, 2019
- *      Author: par116
+/*****************************************************************************
+
+ ENCE 464 Heli Rig - uart.h
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+ Purpose:           Contains functions to initialise and control UART on the Helicopter Rigs
+
  */
 
 #ifndef UART_H_

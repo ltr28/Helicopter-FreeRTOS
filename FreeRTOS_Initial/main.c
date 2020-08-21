@@ -1,11 +1,17 @@
-//*****************************************************************************
-//
-// ENCE 464 Heli Rig - Main Function
-//
-// Author:  Nathan James ()
-//          Luke Trenberth (47277086)
-//          Abhimanyu Chhabra (99799242)
-// Last modified:	20.08.2020
+/*****************************************************************************
+
+ ENCE 464 Heli Rig - main.c
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+Purpose:            Contains the main function
+                    Initializes all variables and FreeRTOS
+                    Runs the task scheduler
+ */
 
 #include <AllHeaderFiles.h>
 

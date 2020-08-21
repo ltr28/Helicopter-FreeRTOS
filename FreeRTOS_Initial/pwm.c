@@ -1,6 +1,20 @@
+/*****************************************************************************
+
+ ENCE 464 Heli Rig - pwm.c
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+ Purpose:           Contains functions to initialise and control PWM on Helicopter Rigs using the TivaBoard
+
+ */
+
 
 #include "AllHeaderFiles.h"
-#include <pwm.h>
+#include "pwm.h"
 
 
 //*****************************************************************************

@@ -1,22 +1,22 @@
+/*****************************************************************************
 
+ ENCE 464 Heli Rig - altitude.c
 
-/*
-    adc.c
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
 
-    Created on: 28/03/2019
-    Team_members: Abhimanyu Chhabra(99799242), Saranya Ramani(27179399), Jin Kim(79903309)
- */
+ Last modified:     21.08.2020
 
-/*
-    Simple initializing of ADC which samples with ADC_CHANNEL9(AIN9 - PE4 on tiva board)).
+Purpose:            Simple initializing of ADC which samples with ADC_CHANNEL9(AIN9 - PE4 on tiva board)).
 
-    The ADC is being used to calculate the altitude of the helicopter. ADC samples at 100 Hz (0.01s) and then
-    writes it to a circular buffer. ADCProcessorTrigger(ADC0_BASE, 3) gets the sample - it is being called in Heli_Main.c
-    in void SysTickIntHandler(void).
+                    The ADC is being used to calculate the altitude of the helicopter. ADC samples at 100 Hz (0.01s) and then
+                    writes it to a circular buffer. ADCProcessorTrigger(ADC0_BASE, 3) gets the sample - it is being called in Heli_Main.c
+                    in void SysTickIntHandler(void).
 
-    Functions used from week 4 lab ADCdemo1.c (Author:  P.J. Bones) are:
-    1. void ADCIntHandler(void) -  void adc_int_handler(void)
-    2. void initADC (void)      -  void init_adc (void)
+                    Functions used from week 4 lab ADCdemo1.c (Author:  P.J. Bones) are:
+                    1. void ADCIntHandler(void) -  void adc_int_handler(void)
+                    2. void initADC (void)      -  void init_adc (void)
  */
 #define BUF_SIZE 25
 #define ADC_QUEUE_ITEM_SIZE sizeof(uint32_t)
@@ -37,11 +37,11 @@ bool init_land_alt = false;
 
 
 
-/*
-  The handler for the ADC conversion complete interrupt.
-  Writes to the circular buffer. Based on Week 4 lab ADCdemo1.c - void ADCIntHandler(void)
- */
-
+//*****************************************************************************
+// computeAltitude:         The handler for the ADC conversion complete interrupt.
+//                          Receives values from the queue, summing the result
+//
+// RETURNS:                 The average ADC sum over the given cycles
 int32_t computeAltitude (void)
 {
     //initiate the sum to be 0 and the altitude value to be zero
@@ -56,24 +56,29 @@ int32_t computeAltitude (void)
     return ((2 * AltSum + BUF_SIZE) / 2 / BUF_SIZE);    //returns an overall sum.
 }
 
-void resetAltitude(void)
-{
-    initial_position = computeAltitude();
-}
 
+
+//*****************************************************************************
+// percentAltitude:         Finds the initial position
+//                          Calculates and returns the altitude percentage
+//
+// RETURNS:                 The percentage of altitude unbound
 int32_t percentAltitude(void)
 {
      if (init_land_alt == false) {
-         resetAltitude();
+         initial_position = computeAltitude();
          init_land_alt = true;
      }
     int32_t current_position = computeAltitude();
     return (2*100*(initial_position-current_position)+RANGE_ALTITUDE)/(2*RANGE_ALTITUDE);
 }
 
-//// Place it in the circular buffer (advancing write index)
-void
-ADCIntHandler(void)
+
+
+//*****************************************************************************
+// ADCIntHandler:           Interrupt Handler for ADC triggered interrupt
+//                          Place it in the circular buffer (advancing write index)
+void ADCIntHandler(void)
 {
     xHigherPriorityTaskWoken = pdFALSE;
     uint32_t ulValue;
@@ -86,12 +91,12 @@ ADCIntHandler(void)
 
 }
 
-/*
-  Intializes ADC_CHANNEL9(AIN9 - PE4 on tiva board)
-  Based on Week 4 lab ADCdemo1.c - void initADC (void)
- */
-void
-initADC (void)
+
+
+//*****************************************************************************
+// initADC:                 Intializes ADC_CHANNEL9(AIN9 - PE4 on tiva board)
+//                          Based on Week 4 lab ADCdemo1.c - void initADC (void)
+void initADC (void)
 {
     // The ADC0 peripheral must be enabled for configuration and use.
     SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
@@ -124,6 +129,10 @@ initADC (void)
 
 }
 
+
+
+//*****************************************************************************
+// ADCTriggerTask:          FreeRTOS Task processing the ADC Trigger
 void ADCTriggerTask(void *pvParameters)
 {
     TickType_t xLastWakeTime;
@@ -138,6 +147,8 @@ void ADCTriggerTask(void *pvParameters)
 
 
 
+//*****************************************************************************
+// ADCReceiveTask:          FreeRTOS Task updating the current altitude by calculation
 void ADCReceiveTask(void *p)
 {
 
@@ -156,8 +167,11 @@ void ADCReceiveTask(void *p)
 
 
 
-uint32_t
-initADCTriggerTask(void)
+//*****************************************************************************
+// initADCTriggerTask:        Initialise the FreeRTOS Task ADCTriggerTask
+//                            Creates the ADC Queue
+// RETURNS:                   1 if no errors, 0 if errors occurred
+uint32_t initADCTriggerTask(void)
 {
     xADCQueue = xQueueCreate( BUF_SIZE, ADC_QUEUE_ITEM_SIZE );
     if(xTaskCreate(ADCTriggerTask, (const portCHAR *)"Get Sample", ADCS_TASK_STACK_SIZE, NULL,
@@ -172,8 +186,11 @@ initADCTriggerTask(void)
 
 
 
-uint32_t
-intADCReceiveTask(void)
+//*****************************************************************************
+// intADCReceiveTask:         Initialise the FreeRTOS Task ADCReceiveTask
+//                            Creates the ADC Queue
+// RETURNS:                   1 if no errors, 0 if errors occurred
+uint32_t intADCReceiveTask(void)
 {
 
     if(xTaskCreate(ADCReceiveTask, (const portCHAR *)"Altitude_Calc", ADCR_TASK_STACK_SIZE, NULL,

@@ -1,18 +1,29 @@
+/*****************************************************************************
+
+ ENCE 464 Heli Rig - buttons4.c
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+ Purpose:           Support for a set of FOUR specific buttons on the Tiva/Orbit.
+
+                    The ADC is being used to calculate the altitude of the helicopter. ADC samples at 100 Hz (0.01s) and then
+                    writes it to a circular buffer. ADCProcessorTrigger(ADC0_BASE, 3) gets the sample - it is being called in Heli_Main.c
+                    in void SysTickIntHandler(void).
+
+                    Functions used from week 4 lab ADCdemo1.c (Author:  P.J. Bones) are:
+                    1. void ADCIntHandler(void) -  void adc_int_handler(void)
+                    2. void initADC (void)      -  void init_adc (void)
+ */
+
+//Note:             pin PF0 (the pin for the RIGHT pushbutton - SW2 on
+//                  the Tiva board) needs special treatment - See PhilsNotesOnTiva.rtf.
+
 #ifndef BUTTONS_H_
 #define BUTTONS_H_
-
-// *******************************************************
-// buttons4.h
-//
-// Support for a set of FOUR specific buttons on the Tiva/Orbit.
-// ENCE361 sample code.
-// The buttons are:  UP and DOWN (on the Orbit daughterboard) plus
-// LEFT and RIGHT on the Tiva.
-//
-// P.J. Bones UCECE
-// Last modified:  7.2.2018
-// 
-// *******************************************************
 
 #include <stdint.h>
 #include <stdbool.h>

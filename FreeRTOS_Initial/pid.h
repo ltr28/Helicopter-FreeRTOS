@@ -1,3 +1,17 @@
+/*****************************************************************************
+
+ ENCE 464 Heli Rig - pid.h
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+ Purpose:           Contains the functions required ti initialise and update the PID structures
+
+ */
+
 #ifndef PID_H_
 #define PID_H_
 

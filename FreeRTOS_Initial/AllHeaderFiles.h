@@ -1,8 +1,15 @@
-/*
- * AllHeaderFiles.h
- *
- *  Created on: 13/08/2020
- *      Author: ach227
+/*****************************************************************************
+
+ ENCE 464 Heli Rig - AllHeaderFiles.c
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+Purpose:            Establishes a header file that most files require
+                    Imported by all .c files
  */
 
 #ifndef ALLHEADERFILES_H_

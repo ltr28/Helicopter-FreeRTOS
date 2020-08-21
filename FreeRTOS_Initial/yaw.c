@@ -1,3 +1,18 @@
+/*****************************************************************************
+
+ ENCE 464 Heli Rig - yaw.c
+
+ Author:            Nathan James (44005459)
+                    Luke Trenberth (47277086)
+                    Abhimanyu Chhabra (99799242)
+
+ Last modified:     21.08.2020
+
+ Purpose:           Contains functions to initialise, read and update
+                    the yaw position of the Helicopter
+
+ */
+
 
 #include "AllHeaderFiles.h"
 #include "yaw.h"
@@ -12,23 +27,33 @@ extern xSemaphoreHandle g_pDataSemaphore;
 extern OperatingData_t OperatingData;
 
 typedef enum {STATE1 = 0, STATE2 = 2, STATE3 = 3, STATE4 = 1} yawStates_t ;  // 0b00 0b10 0b11 0b01
-
 Slots_s slot_states;
 
-Slots_s Slots (void)
+
+// *******************************************************
+// Slots:                   Initializes the Slots variable and setting initial conditions
+// RETURNS:                 The new Slots object
+Slots_s initSlots (void)
 {
     Slots_s Slots;
-    Slots.current = 0; //Current Number of Slots
-    Slots.mapped = 0; //stays within 448 to -448
+    Slots.current = 0;       //Current Number of Slots
+    Slots.mapped = 0;       //stays within 448 to -448
     return (Slots);
 }
 
+
+
+// *******************************************************
+// resetSlotState:          Resets the slot_state object parameters to 0
 void resetSlotState(void)
 {
     slot_states.current = 0;
     slot_states.mapped = 0;
 }
 
+
+// *******************************************************
+// EqualiseCurrentSlots:        Maps the slot states to the current value
 void EqualiseCurrentSlots(void)
 {
     slot_states.current = slot_states.mapped;
@@ -42,31 +67,27 @@ yawStates_t current_yaw_state = STATE1;
 
 
 // *******************************************************
-// getYaw:          Uses the current slot number on the disk to
-//                  return an angle in degrees from the original reference point.
-// RETURNS:         Angle value between -180 < Yaw < 180 degrees.
+// CalculateYaw:            Uses the current slot number on the disk to
+//                          return an angle in degrees from the original reference point
 void CalculateYaw (void)
 {
-    if((slot_states.mapped >= TOTAL_SLOTS) || (slot_states.mapped <= -TOTAL_SLOTS)) /*
-                                                                                                     if mapped slot count goes beyond
-                                                                                                     448 or -448 set it back to 0.*/
-
+    if((slot_states.mapped >= TOTAL_SLOTS) || (slot_states.mapped <= -TOTAL_SLOTS))
     {
+        //if mapped slot count goes beyond 448 or -448 set it back to 0.
         slot_states.mapped= 0;
     }
 
+    //  mapped degrees stays within 360 to -360 for displaying purposes
     OperatingData.YawCurrent =  (2*slot_states.current*TOTAL_DEGREES + TOTAL_SLOTS) / 2 / TOTAL_SLOTS;
     OperatingData.YawCurrentMapped = (2*slot_states.mapped*TOTAL_DEGREES + TOTAL_SLOTS) / 2 / TOTAL_SLOTS;
-    /*  mapped degrees stays within 360 to -360 for
-        displaying purposes
-     */
+
 }
 
 // *******************************************************
-//  YawIntHandler:  Interrupt handler for the yaw interrupt.
-//                  Measures Phase A and Phase B.
-//                  If moving clockwise, add 1 to slot
-//                  If moving anti-clockwise, minus 1 to slot
+//  YawIntHandler:          Interrupt handler for the yaw interrupt.
+//                          Measures Phase A and Phase B.
+//                          If moving clockwise, add 1 to slot
+//                          If moving anti-clockwise, minus 1 to slot
 void YawIntHandler (void) {
     //Clear the interrupt bits
     GPIOIntClear(GPIO_PORTB_BASE, GPIO_INT_PIN_0|GPIO_INT_PIN_1); // clears the interrupt flag
@@ -141,12 +162,14 @@ void YawIntHandler (void) {
 }
 
 
+
 // *******************************************************
-//  initYaw:       Interrupt initialisation for the yaw interrupt.
-//                 Sets PB0 and PB1 to be inputs, enables interrupts on GPIOB.
-//                 An interrupt occurs on both edges of PB0 and PB1 and when triggered,
-//                 runs the YawIntHandler function
-void initYaw (void) {
+//  initYaw:                Interrupt initialisation for the yaw interrupt.
+//                          Sets PB0 and PB1 to be inputs, enables interrupts on GPIOB.
+//                          An interrupt occurs on both edges of PB0 and PB1 and when triggered,
+//                          runs the YawIntHandler function
+void initYaw (void)
+{
 
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
     // while(!SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB));
@@ -166,6 +189,9 @@ void initYaw (void) {
 }
 
 
+
+// *******************************************************
+//  yawTask:                The FreeRTOS task for yaw control
 void yawTask (void *pvparameters)
 {
 
@@ -174,32 +200,26 @@ void yawTask (void *pvparameters)
     while(1)
 
     {
-        if((slot_states.mapped >= TOTAL_SLOTS) || (slot_states.mapped <= -TOTAL_SLOTS)) {
-            slot_states.mapped = 0;
-            //If mapped slot count goes beyond 448 or -448 set it back to 0
-        }
-        xSemaphoreTake(g_pDataSemaphore, portMAX_DELAY);
-        OperatingData.YawCurrent =  (2*slot_states.current*TOTAL_DEGREES + TOTAL_SLOTS) / 2 / TOTAL_SLOTS;
-        OperatingData.YawCurrentMapped = (2*slot_states.mapped*TOTAL_DEGREES + TOTAL_SLOTS) / 2 / TOTAL_SLOTS;
-        xSemaphoreGive(g_pDataSemaphore);
-        //Mapped degrees stays within 360 to -360 for displaying purposes
+        CalculateYaw();
         vTaskDelayUntil(&xTime, pdMS_TO_TICKS(10));
 
 
     }
 }
 
+
+
+// *******************************************************
+//  inityawTask:   Initialise the FreeRTOS task yawTask
 uint32_t inityawTask(void)
 {
     resetSlotState();
     if(xTaskCreate(yawTask, (const portCHAR *)"Get Yaw", YAW_TASK_STACK_SIZE, NULL,
                    PRIORITY_YAW_TASK, NULL) != pdTRUE)
     {
-        return(1);
+        return(1); // Error Occurred
     }
-    //
-    // Success.
-    //
-    return(0);
+
+    return(0); // Success.
 }
 
