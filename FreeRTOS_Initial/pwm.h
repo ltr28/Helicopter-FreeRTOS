@@ -59,17 +59,17 @@ init_pwm_clock (void);
 
 // initializes two pwm signals - for the main motor and for the tail motor
 void
-init_pwm (void);
+initPWM (void);
 
 // turns on the pwm signals
 void
-turn_on_pwm_output (void);
+PWMOn (void);
 
 void
-set_main_pwm (uint32_t ui32Duty);
+PWMSetMain (uint32_t ui32Duty);
 
 void
-set_tail_pwm(uint32_t ui32Duty);
+PWMSetTail(uint32_t ui32Duty);
 
 // sets the duty cycle for the main and the tail motors
 void

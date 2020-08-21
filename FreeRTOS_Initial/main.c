@@ -93,8 +93,8 @@ int main(void)
     initYaw();
     initButtonTimer();
     initSliderSwitch();
-    init_pwm ();
-    turn_on_pwm_output();
+    initPWM ();
+    PWMOn();
     initDisplay();
     IntMasterEnable();
 
@@ -145,13 +145,13 @@ int main(void)
 
       }
 
-//    if(initDisplayTask() != 0) {
-//          while(1)
-//          {
-//
-//          }
-//
-//      }
+    if(initDisplayTask() != 0) {
+          while(1)
+          {
+
+          }
+
+      }
 
 
 

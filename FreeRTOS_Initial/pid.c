@@ -20,6 +20,7 @@
 #define DELTA_T 0.01
 
 
+
 //*****************************************************************************
 // pid_alt_init:            Initialises the Altitude PID constants
 //                          to the Alt_PID structure
@@ -46,6 +47,7 @@ PID_t pid_alt_init(void)
 
     return (Alt_PID);
 }
+
 
 
 //*****************************************************************************
@@ -98,6 +100,8 @@ PID_t PIDUpdate (PID_t PID, int32_t current, int32_t set)
     }
     return (PID);
 }
+
+
 
 //*****************************************************************************
 // PIDReset:                Resets the PID_controller errors to be 0

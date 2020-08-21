@@ -3,20 +3,19 @@
 #include <pwm.h>
 
 
-
-void
-init_pwm_clock (void)
+//*****************************************************************************
+// init_pwm_clock:          Initialises the PWM clock
+void initPWMClock (void)
 {
     SysCtlPWMClockSet(PWM_DIVIDER_CODE); // Set the PWM clock rate (using the prescaler)
 }
 
-/*
-   void init_pwm (void) - initializes two pwm signals
-   M0PWM7 (J4-05, PC5) is used for the main rotor motor
-   M1PWM5 (J3-10, PF1) is used for the tail rotor motor
- */
-void
-init_pwm (void)
+
+//*****************************************************************************
+// initPWM:           Initializes two pwm signals
+//                    M0PWM7 (J4-05, PC5) is used for the main rotor motor
+//                    M1PWM5 (J3-10, PF1) is used for the tail rotor motor
+void initPWM (void)
 {
     SysCtlPeripheralEnable(PWM_MAIN_PERIPH_PWM);
     SysCtlPeripheralEnable(PWM_TAIL_PERIPH_PWM);
@@ -45,16 +44,18 @@ init_pwm (void)
     PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, false);
 }
 
-void
-turn_on_pwm_output(void)
+//*****************************************************************************
+// init_pwm:          Initializes two pwm signals
+//                    M0PWM7 (J4-05, PC5) is used for the main rotor motor
+//                    M1PWM5 (J3-10, PF1) is used for the tail rotor motor
+void PWMOn(void)
 {
     // Initialisation is complete, so turn on the output.
     PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, true);
     PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, true);
 }
 
-void
-set_main_pwm (uint32_t ui32Duty)
+void PWMSetMain (uint32_t ui32Duty)
 {
     // Calculate the PWM period corresponding to the freq.
     uint32_t ui32Period =
@@ -65,8 +66,7 @@ set_main_pwm (uint32_t ui32Duty)
                      ui32Period * ui32Duty / 100);
 }
 
-void
-set_tail_pwm(uint32_t ui32Duty)
+void PWMSetTail(uint32_t ui32Duty)
 {
     // Calculate the PWM period corresponding to the freq.
     uint32_t ui32Period =
@@ -77,11 +77,10 @@ set_tail_pwm(uint32_t ui32Duty)
                      ui32Period * ui32Duty / 100);
 }
 
-void
-SetDuty(uint32_t main_duty,uint32_t tail_duty)
+void SetDuty(uint32_t main_duty,uint32_t tail_duty)
 {
     OperatingData.AltDuty = main_duty;
     OperatingData.YawDuty = tail_duty;
-    set_main_pwm(main_duty);
-    set_tail_pwm(tail_duty);
+    PWMSetMain(main_duty);
+    PWMSetTail(tail_duty);
 }
