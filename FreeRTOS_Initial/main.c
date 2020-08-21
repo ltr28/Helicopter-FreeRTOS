@@ -85,7 +85,7 @@ int main(void)
     peripherals_reset (); // all the peripherals are reset
     pheripherals_enable (); // all the peripherals are enabled
     init_clock();
-    init_pwm_clock ();
+    initPWMClock();
     initButtons();
     initSwitches();
     initialiseUSB_UART();

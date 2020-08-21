@@ -53,25 +53,45 @@
 
 // Functions declarations
 
-// initializes the pwm clock
+//*****************************************************************************
+// init_pwm_clock:          Initialises the PWM clock
 void
-init_pwm_clock (void);
+initPWMClock (void);
 
-// initializes two pwm signals - for the main motor and for the tail motor
+
+
+//*****************************************************************************
+// initPWM:           Initializes two pwm signals
+//                    M0PWM7 (J4-05, PC5) is used for the main rotor motor
+//                    M1PWM5 (J3-10, PF1) is used for the tail rotor motor
 void
 initPWM (void);
 
-// turns on the pwm signals
-void
-PWMOn (void);
 
+
+//*****************************************************************************
+// PWMOn:             Turns on PWM Output for both motors
+void
+PWMOn(void);
+
+
+
+//*****************************************************************************
+// PWMSetMain:         Sets the PWM on the main rotors
+// INPUTS:             ui32Duty between 0-100, representing the Duty Cycle
 void
 PWMSetMain (uint32_t ui32Duty);
 
+
+
+//*****************************************************************************
+// PWMSetTail:         Sets the PWM on the tail rotor
+// INPUTS:             ui32Duty between 0-100, representing the Duty Cycle
 void
 PWMSetTail(uint32_t ui32Duty);
 
-// sets the duty cycle for the main and the tail motors
+//*****************************************************************************
+// SetDuty:            Sets both the duty cycles of the PWM Signals
 void
 SetDuty (uint32_t main_duty,uint32_t tail_duty);
 

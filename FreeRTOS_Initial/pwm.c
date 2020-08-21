@@ -45,9 +45,7 @@ void initPWM (void)
 }
 
 //*****************************************************************************
-// init_pwm:          Initializes two pwm signals
-//                    M0PWM7 (J4-05, PC5) is used for the main rotor motor
-//                    M1PWM5 (J3-10, PF1) is used for the tail rotor motor
+// PWMOn:             Turns on PWM Output for both motors
 void PWMOn(void)
 {
     // Initialisation is complete, so turn on the output.
@@ -55,6 +53,9 @@ void PWMOn(void)
     PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, true);
 }
 
+//*****************************************************************************
+// PWMSetMain:         Sets the PWM on the main rotors
+// INPUTS:             ui32Duty between 0-100, representing the Duty Cycle
 void PWMSetMain (uint32_t ui32Duty)
 {
     // Calculate the PWM period corresponding to the freq.
@@ -66,6 +67,9 @@ void PWMSetMain (uint32_t ui32Duty)
                      ui32Period * ui32Duty / 100);
 }
 
+//*****************************************************************************
+// PWMSetTail:         Sets the PWM on the tail rotor
+// INPUTS:             ui32Duty between 0-100, representing the Duty Cycle
 void PWMSetTail(uint32_t ui32Duty)
 {
     // Calculate the PWM period corresponding to the freq.
@@ -77,6 +81,9 @@ void PWMSetTail(uint32_t ui32Duty)
                      ui32Period * ui32Duty / 100);
 }
 
+
+//*****************************************************************************
+// SetDuty:            Sets both the duty cycles of the PWM Signals
 void SetDuty(uint32_t main_duty,uint32_t tail_duty)
 {
     OperatingData.AltDuty = main_duty;
