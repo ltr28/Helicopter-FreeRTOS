@@ -151,6 +151,7 @@ void OutputToDisplay(void)
 }
 
 
+
 //  *****************************************************************************
 //  DisplayTask:            FreeRTOS Task displaying the helicopter altitude, height and references on the OLED Display
 static void DisplayTask(void *pvparameters)
