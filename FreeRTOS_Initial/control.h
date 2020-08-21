@@ -1,5 +1,5 @@
 /*
-    pid_control.h (Header file for pid_control.c)
+    pid_control.h (Header file for control.c)
 
     Created on: 27/05/2019
     Team_members: Abhimanyu Chhabra(99799242), Saranya Ramani(27179399), Jin Kim(79903309)

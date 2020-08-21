@@ -2,9 +2,9 @@
 //
 // ENCE 464 Heli Rig - Main Function
 //
-// Author:  N. James
-//          L. Trenberth
-//          A. Chhabra
+// Author:  Nathan James ()
+//          Luke Trenberth (47277086)
+//          Abhimanyu Chhabra (99799242)
 // Last modified:	20.08.2020
 
 #include <AllHeaderFiles.h>
