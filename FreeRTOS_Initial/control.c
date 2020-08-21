@@ -21,10 +21,10 @@
 extern xSemaphoreHandle g_pUARTSemaphore;
 extern xSemaphoreHandle g_pDataSemaphore;
 
-OperatingData_t OperatingData;
-PID_t Alt_PID;
-PID_t Yaw_PID;
-Switch SliderSwitch;
+OperatingData_t OperatingData;  // Operating Data structure
+PID_t Alt_PID;                  // Alt_PID PID control structure for Altitude
+PID_t Yaw_PID;                  // Yaw_PID PID control structure for Yaw
+Switch SliderSwitch;            // SliderSwitch structure for switch states
 
 //*****************************************************************************
 // OperatingData_init:      The OperatingData_init function, initialising the Operating Data structure
@@ -52,8 +52,6 @@ OperatingData_t OperatingData_init (void)
 //                          YawRefHandler reads the current yaw value. If the helicopter
 //                          is not oriented already and the yaw variable has been set,
 //                          the oriented state is set to True.
-//                          with given states and values
-// RETURNS:                 The Operating Data structure with set initial variables
 void YawRefHandler(void)
 {
     OperatingData.YawCurrent  =  GPIOPinRead(GPIO_PORTC_BASE, GPIO_PIN_4);

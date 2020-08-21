@@ -11,20 +11,41 @@
 #include <data_control.h>
 #include <stdint.h>
 
+
+//*****************************************************************************
+// OperatingData_init:      The OperatingData_init function, initialising the Operating Data structure
+//                          with given states and values
+// RETURNS:                 The Operating Data structure with set initial variables
 OperatingData_t
 OperatingData_init (void);
 
-// Functions declarations
+
+
+//*****************************************************************************
+// YawRefHandler:           When the reference signal is triggered, the
+//                          YawRefHandler reads the current yaw value. If the helicopter
+//                          is not oriented already and the yaw variable has been set,
+//                          the oriented state is set to True.
 void
 YawRefHandler(void);
 
+
+//*****************************************************************************
+// FlightFSM:               Sets the Controls in each flight mode
+//                          Triggers flight mode changes.
+//                          OperatingData structure is updated based on flight conditions
 void
 FlightFSM (void);
 
+
+//*****************************************************************************
+// ControlTask:             The FreeRTOS task controlling the helicopter control states, calling FlightFSM
+//                          Runs continuously
 void
 ControlTask (void *pvparameters);
 
-
+//*****************************************************************************
+// ControlTask:             The  FreeRTOS task ControlTask initialisation
 extern uint32_t
 initControlTask (void);
 
