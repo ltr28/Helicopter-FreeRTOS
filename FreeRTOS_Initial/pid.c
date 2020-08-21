@@ -2,28 +2,30 @@
 #include "pid.h"
 
 
-/* _alt - main_rotor
-   KP_alt - Proportional gain for altitude
-   KI_alt - Integral gain for the altitude
-   KD_alt - Derivative gain for the altitude
- */
+//*****************************************************************************
+//    Control Constants:
+//    KP_alt - Proportional gain for altitude
+//    KI_alt - Integral gain for the altitude
+//    KD_alt - Derivative gain for the altitude
+//    KP_yaw - Proportional gain for yaw
+//    KI_yaw - Integral gain for the yaw
+//    KD_yaw - Derivative gain for the yaw
+
 #define KP_alt 0.7
 #define KI_alt 0.2
 #define KD_alt 1
-
-
-/* _yaw - tail_rotor
-    KP_yaw - Proportional gain for yaw
-   KI_yaw - Integral gain for the yaw
-   KD_yaw - Derivative gain for the yaw
- */
 #define KP_yaw 0.6
 #define KI_yaw 0.05
 #define KD_yaw 1
 #define DELTA_T 0.01
 
-PID_t
-pid_alt_init(void)
+
+//*****************************************************************************
+// pid_alt_init:            Initialises the Altitude PID constants
+//                          to the Alt_PID structure
+//
+// RETURNS:                 PID_t containing initialised PID structure
+PID_t pid_alt_init(void)
 {
     PID_t Alt_PID;
     Alt_PID.k_p = KP_alt;
@@ -45,8 +47,14 @@ pid_alt_init(void)
     return (Alt_PID);
 }
 
-PID_t
-pid_yaw_init(void)
+
+//*****************************************************************************
+// pid_yaw_init:            Initialises the Yaw PID constants
+//                          to the Yaw_PID structure
+//                          Initialises errors to 0
+//                          Sets delta_t to DELTA_T
+// RETURNS:                 PID_t containing initialised PID structure
+PID_t pid_yaw_init(void)
 {
     PID_t Yaw_PID;
     Yaw_PID.k_p = KP_yaw;
@@ -69,8 +77,13 @@ pid_yaw_init(void)
 
 }
 
-PID_t
-PIDUpdate (PID_t PID, int32_t current, int32_t set)
+
+
+//*****************************************************************************
+// PIDUpdate:               Updates the given PID values based off signal error
+//
+// RETURNS:                 The updated PID structure, with updated values
+PID_t PIDUpdate (PID_t PID, int32_t current, int32_t set)
 {
     PID.current = current;
     PID.p_error = set - current;
@@ -86,8 +99,11 @@ PIDUpdate (PID_t PID, int32_t current, int32_t set)
     return (PID);
 }
 
-PID_t
-PIDReset (PID_t PID)
+//*****************************************************************************
+// PIDReset:                Resets the PID_controller errors to be 0
+//
+// RETURNS:                 The updated PID structure, with 0 errors
+PID_t PIDReset (PID_t PID)
 {
     PID.p_error = 0;
     PID.i_error = 0;
